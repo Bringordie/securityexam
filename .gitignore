@@ -96,5 +96,4 @@ modules.xml
 # End of https://www.gitignore.io/api/intellij+all
 /target/
 /src/main/java/cors/tester.java
-/src/main/resources/config.properties
 src/main/java/utils/SetupTestUsers.java
