@@ -76,14 +76,14 @@ public class LoginEndpointTest {
             user.addRole(userRole);
             User admin = new User("admin", "test");
             admin.addRole(adminRole);
-            User both = new User("user_admin", "test");
-            both.addRole(userRole);
-            both.addRole(adminRole);
+//            User both = new User("user_admin", "test");
+//            both.addRole(userRole);
+//            both.addRole(adminRole);
             em.persist(userRole);
             em.persist(adminRole);
             em.persist(user);
             em.persist(admin);
-            em.persist(both);
+//            em.persist(both);
             System.out.println("Saved test data to database");
             em.getTransaction().commit();
         } finally {
@@ -129,6 +129,10 @@ public class LoginEndpointTest {
 
   @Test
   public void testRestForAdmin() {
+      System.out.println("THIS WILL FAIL");
+      System.out.println("THIS WILL FAIL");
+      System.out.println("THIS WILL FAIL");
+      System.out.println("THIS WILL FAIL");
     login("admin", "test");
     given()
             .contentType("application/json")
@@ -174,30 +178,30 @@ public class LoginEndpointTest {
             .statusCode(401);
   }
   
-  @Test
-  public void testRestForMultiRole1() {
-    login("user_admin", "test");
-    given()
-            .contentType("application/json")
-            .accept(ContentType.JSON)
-            .header("x-access-token", securityToken)
-            .when()
-            .get("/info/admin").then()
-            .statusCode(200)
-            .body("msg", equalTo("Hello to (admin) User: user_admin"));
-  }
+//  @Test
+//  public void testRestForMultiRole1() {
+//    login("user_admin", "test");
+//    given()
+//            .contentType("application/json")
+//            .accept(ContentType.JSON)
+//            .header("x-access-token", securityToken)
+//            .when()
+//            .get("/info/admin").then()
+//            .statusCode(200)
+//            .body("msg", equalTo("Hello to (admin) User: user_admin"));
+//  }
 
-  @Test
-  public void testRestForMultiRole2() {
-    login("user_admin", "test");
-    given()
-            .contentType("application/json")
-            .header("x-access-token", securityToken)
-            .when()
-            .get("/info/user").then()
-            .statusCode(200)
-            .body("msg", equalTo("Hello to User: user_admin"));
-  }
+//  @Test
+//  public void testRestForMultiRole2() {
+//    login("user_admin", "test");
+//    given()
+//            .contentType("application/json")
+//            .header("x-access-token", securityToken)
+//            .when()
+//            .get("/info/user").then()
+//            .statusCode(200)
+//            .body("msg", equalTo("Hello to User: user_admin"));
+//  }
 
   @Test
   public void userNotAuthenticated() {

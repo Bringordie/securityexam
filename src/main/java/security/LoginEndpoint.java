@@ -10,6 +10,7 @@ import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import entities.Role;
 import facades.UserFacade;
 import java.util.Date;
 import java.util.List;
@@ -44,7 +45,7 @@ public class LoginEndpoint {
 
     try {
       User user = USER_FACADE.getVeryfiedUser(username, password);
-      String token = createToken(username, user.getRolesAsStrings());
+      String token = createToken(username, user.getRole());
       JsonObject responseJson = new JsonObject();
       responseJson.addProperty("username", username);
       responseJson.addProperty("token", token);
@@ -59,14 +60,8 @@ public class LoginEndpoint {
     throw new AuthenticationException("Invalid username or password! Please try again");
   }
 
-  private String createToken(String userName, List<String> roles) throws JOSEException {
+  private String createToken(String userName, Role role) throws JOSEException {
 
-    StringBuilder res = new StringBuilder();
-    for (String string : roles) {
-      res.append(string);
-      res.append(",");
-    }
-    String rolesAsString = res.length() > 0 ? res.substring(0, res.length() - 1) : "";
     String issuer = "semesterstartcode-dat3";
 
     JWSSigner signer = new MACSigner(SharedSecret.getSharedKey());
@@ -74,11 +69,12 @@ public class LoginEndpoint {
     JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
             .subject(userName)
             .claim("username", userName)
-            .claim("roles", rolesAsString)
+            .claim("role", role.getRoleName().toString())
             .claim("issuer", issuer)
             .issueTime(date)
             .expirationTime(new Date(date.getTime() + TOKEN_EXPIRE_TIME))
             .build();
+    // ERROR HERE
     SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
     signedJWT.sign(signer);
     return signedJWT.serialize();
