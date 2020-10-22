@@ -7,6 +7,8 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -39,6 +41,13 @@ public class User implements Serializable {
         @JoinColumn(name = "role_name", referencedColumnName = "role_name")})
     @ManyToOne
     private Role role;
+    // https://docs.oracle.com/javase/10/docs/api/java/util/UUID.html ?
+    // https://www.callicoder.com/distributed-unique-id-sequence-number-generator/
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String profilePicture;
+    @JoinTable(name = "user_friends", joinColumns = {
+        @JoinColumn(name = "user_name", referencedColumnName = "user_name")}, inverseJoinColumns = {
+        @JoinColumn(name = "user_friend", referencedColumnName = "user_friend")})
     @ManyToMany (cascade = {CascadeType.PERSIST})
     private List<Friends> friendList = new ArrayList();
     @ManyToMany (cascade = {CascadeType.PERSIST})
@@ -47,6 +56,14 @@ public class User implements Serializable {
 
     public User() {
     }
+
+    public User(String userName, String userPass, String profilePicture) {
+        this.userName = userName;
+        this.userPass = userPass;
+        this.profilePicture = profilePicture;
+    }
+    
+    
 
     public void addUserPost(UserPosts userPost) {
         this.userPosts.add(userPost);
@@ -106,6 +123,19 @@ public class User implements Serializable {
         this.role = userRole;
     }
 
+    public String getProfilePicture() {
+        return profilePicture;
+    }
 
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
+    }
 
+    @Override
+    public String toString() {
+        return "User{" + "userName=" + userName + ", userPass=" + userPass + ", profilePicture=" + profilePicture + ", role=" + role + ", friendList=" + friendList + ", userPosts=" + userPosts + '}';
+    }
+    
+    
+    
 }

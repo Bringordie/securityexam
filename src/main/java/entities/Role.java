@@ -16,11 +16,11 @@ import javax.validation.constraints.Size;
 
 /**
  *
- * @author Plaul
+ * @author Frederik
  */
 @Entity
 @NamedQuery(name = "Role.deleteAllRows", query = "DELETE from Role")
-@Table(name = "roles")
+@Table(name = "role")
 public class Role implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -56,5 +56,11 @@ public class Role implements Serializable {
         this.userList = userList;
     }
 
+    @Override
+    public String toString() {
+        return "Role{" + "roleName=" + roleName + ", userList=" + userList + '}';
+    }
+
+    
     
 }

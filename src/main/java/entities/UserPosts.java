@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
 
 /**
@@ -13,6 +14,7 @@ import javax.persistence.Temporal;
  * @author Frederik
  */
 @Entity
+@Table(name = "user_posts")
 public class UserPosts implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -23,9 +25,9 @@ public class UserPosts implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date postDate;
 
-    public UserPosts(String message, Date postDate) {
+    public UserPosts(String message) {
         this.message = message;
-        this.postDate = postDate;
+        postDate = new Date();
     }
 
     public UserPosts() {
@@ -54,5 +56,12 @@ public class UserPosts implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "UserPosts{" + "id=" + id + ", message=" + message + ", postDate=" + postDate + '}';
+    }
+    
+    
 
 }
