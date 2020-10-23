@@ -13,6 +13,7 @@
     <class>dtos.movierating.CriticsDTO</class>
     <class>entities.Movie</class>
     <class>entities.UserPosts</class>
+    <class>entities.maintest</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <!-- DO NOT remove the line below. It's not set by the  entityUtils.EMF_Creator -->

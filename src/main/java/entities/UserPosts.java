@@ -2,6 +2,7 @@ package entities;
 
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,15 +15,17 @@ import javax.persistence.Temporal;
  * @author Frederik
  */
 @Entity
-@Table(name = "user_posts")
+@Table(name = "posts")
 public class UserPosts implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "user_post")
     private String message;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Column(name = "post_date")
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date postDate;
 
     public UserPosts(String message) {

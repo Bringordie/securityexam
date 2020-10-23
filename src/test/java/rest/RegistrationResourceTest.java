@@ -8,6 +8,7 @@ import io.restassured.RestAssured;
 import static io.restassured.RestAssured.with;
 import io.restassured.parsing.Parser;
 import java.net.URI;
+import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.core.UriBuilder;
@@ -55,8 +56,8 @@ public class RegistrationResourceTest {
             em.createNamedQuery("User.deleteAllRows").executeUpdate();
             em.createNamedQuery("Role.deleteAllRows").executeUpdate();
 
-            User u1 = new User("user1", "test1");
-            User u2 = new User("user2", "test2");
+            User u1 = new User("UserFirstName userLastName","user1", "password", "Very secret user recovery password");
+            User u2 = new User("AdminFirstName AdminLastName", "admin", "password", "Very secret admin recovery password");
 
             Role r1 = new Role("user");
             Role r2 = new Role("admin");
@@ -87,7 +88,7 @@ public class RegistrationResourceTest {
     @Test
     public void testUsernameAlreadyExists() {
         with().contentType("application/json")
-                .when().request("POST", "/register/user/user1/password").then() //post REQUEST
+                .when().request("POST", "/register/user/fullname/user1/password/secretpw").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.BAD_REQUEST_400.getStatusCode());
     }

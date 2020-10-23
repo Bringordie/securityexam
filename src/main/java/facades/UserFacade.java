@@ -50,13 +50,13 @@ public class UserFacade {
         return user;
     }
     
-    public User createNormalUser(String username, String password) throws AlreadyExistsException {
+    public User createNormalUser(String fullName, String userName, String userPass, String secretAnswer, String profilePicture) throws AlreadyExistsException {
         EntityManager em = emf.createEntityManager();
-        User userregister = new User(username, password);
+        User userregister = new User(fullName, userName, userPass, secretAnswer, profilePicture);
         Role userRole = new Role("user");
         userregister.addRole(userRole);
         try {
-            User user = em.find(User.class, username);
+            User user = em.find(User.class, userName);
             if (user != null ) {
                 throw new AlreadyExistsException("User name already exists");
             }
@@ -69,13 +69,13 @@ public class UserFacade {
         return userregister;
     }
     
-    public User adminCreateUser(String username, String password, String role) throws AlreadyExistsException {
+    public User adminCreateUser(String fullName, String userName, String userPass, String secretAnswer, String profilePicture) throws AlreadyExistsException {
         EntityManager em = emf.createEntityManager();
-        User userregister = new User(username, password);
-        Role userRole = new Role(role);
+        User userregister = new User(fullName, userName, userPass, secretAnswer, profilePicture);
+        Role userRole = new Role("admin");
         userregister.addRole(userRole);
         try {
-            User user = em.find(User.class, username);
+            User user = em.find(User.class, userName);
             if (user != null ) {
                 throw new AlreadyExistsException("User name already exists");
             }

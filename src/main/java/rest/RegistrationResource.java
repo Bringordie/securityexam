@@ -4,8 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import entities.User;
 import errorhandling.AlreadyExistsException;
 import facades.UserFacade;
+import java.util.UUID;
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.Consumes;
@@ -37,23 +39,28 @@ public class RegistrationResource {
     SecurityContext securityContext;
     
     @POST
-    @Path("/user/{username}/{password}")
+    @Path("/user/{fullName}/{userName}/{userPass}/{secretAnswer}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String createUser(@PathParam("username") String username, @PathParam("password") String password) {
+    public String createUser(@PathParam("fullName") String fullName, @PathParam("userName") String userName, @PathParam("userPass") String userPass, @PathParam("secretAnswer") String secretAnswer) {
+        String profilePicture = UUID.randomUUID().toString();
+        // ## TO DO ADD/RENAME THE PICTURE ALSO
+        
         try {
-            return GSON.toJson(FACADE.createNormalUser(username, password));
+            return GSON.toJson(FACADE.createNormalUser(fullName, userName, userPass, secretAnswer, profilePicture));
         } catch (AlreadyExistsException ex) {
             throw new WebApplicationException(ex.getMessage(), 400);
         }
     }
 
     @POST
-    @Path("/admin/{username}/{password}/{role}")
+    @Path("/admin/{fullName}/{userName}/{userPass}/{secretAnswer}")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("admin")
-    public String createAdmin(@PathParam("username") String username, @PathParam("password") String password, @PathParam("role") String role) {
+    public String createAdmin(@PathParam("fullName") String fullName, @PathParam("userName") String userName, @PathParam("userPass") String userPass, @PathParam("secretAnswer") String secretAnswer) {
+        String profilePicture = UUID.randomUUID().toString();
+        // ## TO DO ADD/RENAME THE PICTURE ALSO
         try {
-            return GSON.toJson(FACADE.adminCreateUser(username, password, role));
+            return GSON.toJson(FACADE.adminCreateUser(fullName, userName, userPass, secretAnswer, profilePicture));
         } catch (AlreadyExistsException ex) {
             throw new WebApplicationException(ex.getMessage(), 400);
         }

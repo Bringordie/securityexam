@@ -25,22 +25,13 @@ public class Friends implements Serializable {
     private Long id;
     @Column(name = "user_friend")
     private String friendUsername;
-    //private User friendList = new User();
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
-    //private Long id;
-    //private User friendList = new User();
 
     public Friends() {
     }
 
     public void addFriend(String username) {
-        //this.friendList.add(user);
-        this.friendUsername=username;
+        this.friendUsername = username;
     }
-
-//    public List<User> viewFriends() {
-//        return friendList;
-//    }
 
     public Long getId() {
         return id;
@@ -50,21 +41,9 @@ public class Friends implements Serializable {
         this.id = id;
     }
 
-//    public List<User> getFriendList() {
-//        return friendList;
-//    }
-
-//    public void setFriendList(List<User> friendList) {
-//        this.friendList = friendList;
-//    }
-
     @Override
     public String toString() {
         return "Friends{" + "friendList=" + friendUsername + '}';
     }
-
-    
-    
-    
 
 }
