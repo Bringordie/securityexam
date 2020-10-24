@@ -2,6 +2,7 @@ package facades;
 
 import entities.Role;
 import entities.User;
+import entities.UserPosts;
 import errorhandling.AlreadyExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -107,6 +108,25 @@ public class UserFacade {
             em.close();
         }
         return user;
+    }
+    
+    public boolean createPost(String username, String userPost) {
+        EntityManager em = emf.createEntityManager();
+        User user;
+        UserPosts post = new UserPosts(userPost);
+        try {
+            em.getTransaction().begin();
+            user = em.find(User.class, username);
+            if(user == null) {
+            return false;
+            }
+            user.addUserPost(post);
+            em.persist(user);
+            em.getTransaction().commit();
+        }finally {
+            em.close();
+        }
+        return true;
     }
     
 

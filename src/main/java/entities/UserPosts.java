@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 
@@ -15,6 +16,7 @@ import javax.persistence.Temporal;
  * @author Frederik
  */
 @Entity
+@NamedQuery(name = "UserPosts.deleteAllRows", query = "DELETE from UserPosts")
 @Table(name = "posts")
 public class UserPosts implements Serializable {
 

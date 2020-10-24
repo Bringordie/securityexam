@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 /**
@@ -16,6 +17,7 @@ import javax.persistence.Table;
  * @author Frederik
  */
 @Entity
+@NamedQuery(name = "Friends.deleteAllRows", query = "DELETE from Friends")
 @Table(name = "friends")
 public class Friends implements Serializable {
 
@@ -28,6 +30,12 @@ public class Friends implements Serializable {
 
     public Friends() {
     }
+
+    public Friends(String friendUsername) {
+        this.friendUsername = friendUsername;
+    }
+    
+    
 
     public void addFriend(String username) {
         this.friendUsername = username;
