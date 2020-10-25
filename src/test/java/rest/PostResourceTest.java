@@ -1,15 +1,16 @@
 package rest;
 
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import entities.FriendRequest;
 import entities.Friends;
-import entities.User;
 import entities.Role;
+import entities.User;
 import entities.UserPosts;
-
+import facades.UserFacade;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
-import io.restassured.http.ContentType;
+import static io.restassured.RestAssured.with;
 import io.restassured.parsing.Parser;
 import java.net.URI;
 import java.util.UUID;
@@ -19,28 +20,30 @@ import javax.ws.rs.core.UriBuilder;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import net.minidev.json.JSONObject;
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-import static org.hamcrest.Matchers.equalTo;
 import org.junit.jupiter.api.AfterAll;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import static rest.LoginEndpointTest.login;
+import static rest.LoginEndpointTest.securityToken;
+import static rest.LoginEndpointTest.startServer;
 import utils.EMF_Creator;
 
-//@Disabled
-public class LoginEndpointTest {
+public class PostResourceTest {
 
     private static final int SERVER_PORT = 7777;
-    private static final String SERVER_URL = "http://localhost/api";
-
+    private static final String SERVER_URL = "http://localhost/api/";
+    private EntityManager em;
+    private static String securityToken;
 
     static final URI BASE_URI = UriBuilder.fromUri(SERVER_URL).port(SERVER_PORT).build();
     private static HttpServer httpServer;
     private static EntityManagerFactory emf;
-    
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
     private User u1, u2, u3, u4;
     private Role r1, r2;
     private Friends f1, f2;
@@ -65,15 +68,6 @@ public class LoginEndpointTest {
         RestAssured.defaultParser = Parser.JSON;
     }
 
-    @AfterAll
-    public static void closeTestServer() {
-        //Don't forget this, if you called its counterpart in @BeforeAll
-        EMF_Creator.endREST_TestWithDB();
-        httpServer.shutdownNow();
-    }
-
-    // Setup the DataBase (used by the test-server and this test) in a known state BEFORE EACH TEST
-    //TODO -- Make sure to change the EntityClass used below to use YOUR OWN (renamed) Entity class
     @BeforeEach
     public void setUp() {
         EntityManager em = emf.createEntityManager();
@@ -99,7 +93,7 @@ public class LoginEndpointTest {
 
             em.persist(r1);
             em.persist(r2);
-            
+
             em.getTransaction().commit();
 
             up1 = new UserPosts("This is a post made by a user");
@@ -107,13 +101,13 @@ public class LoginEndpointTest {
 
             u1.addUserPost(up1);
             u4.addUserPost(up2);
-            
+
             f1 = new Friends(u4.getUserName());
             f2 = new Friends(u1.getUserName());
 
             u1.addToFriendList(f1);
             u2.addToFriendList(f2);
-            
+
             em.getTransaction().begin();
             em.persist(u1);
             em.persist(u2);
@@ -132,63 +126,72 @@ public class LoginEndpointTest {
             em.persist(u1);
             em.persist(u2);
             em.getTransaction().commit();
+
         } finally {
             em.close();
         }
     }
-    
-    //This is how we hold on to the token after login, similar to that a client must store the token somewhere
-  public static String securityToken;
 
-  //Utility method to login and set the returned securityToken
-  public static void login(String username, String password) {
-    JSONObject json = new JSONObject();
-        json.put("username", username);
-        json.put("password", password);
-    securityToken = given()
-            .contentType("application/json")
-            .body(json)
-            .when().post("/login")
-            .then()
-            .extract().path("token");
-      System.out.println("TOKEN ---> "+securityToken);
-  }
+    @AfterAll
+    public static void closeTestServer() {
+        //System.in.read();
+        //Don't forget this, if you called its counterpart in @BeforeAll
+        EMF_Creator.endREST_TestWithDB();
+        httpServer.shutdownNow();
+    }
 
-  private void logOut() {
-    securityToken = null;
-  }
 
-  @Test
-  public void userNotAuthenticatedTest() {
-    System.out.println("Testing is server UP");
-    JSONObject obj = new JSONObject();
-        obj.put("username", "user123");
-        obj.put("password", "password");
+    @Test
+    public void successfullCreatePostTest() {
         
-    given().contentType("application/json")
-            .body(obj).when().post("/login")
-            .then().statusCode(403);
-  }
-  
-  @Test
-  public void successfullLoginTest() {
-    System.out.println("Testing is server UP");
-    JSONObject obj = new JSONObject();
-        obj.put("username", "user");
-        obj.put("password", "test");
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u1.getUserName(), "test");
+        String token = getToken.securityToken;
         
-    given().contentType("application/json")
-            .body(obj).when().post("/login")
-            .then().assertThat().statusCode(200);
-  }
-  
-  @Test
-  public void testLoginFunctionTest() {
-    login("user", "test");
-    assertNotNull(securityToken!=null);
-    System.out.println("The token is NOT NULL and it is: " + securityToken);
-  }
+        //Creating a JSON Object
+        JSONObject obj = new JSONObject();
+        obj.put("token", token);
+        obj.put("username", u1.getUserName());
+        obj.put("post", "This is a very good post, please like and share");
 
-
+        given() //include object in body
+                .contentType("application/json")
+                .body(obj)
+                .when().post("/post/create").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode());
+    }
     
+    @Test
+    public void failCreatePostTest() {
+        //Creating a JSON Object
+        JSONObject obj = new JSONObject();
+        obj.put("token", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZSI6InVzZXIiLCJleHAiOjE2MDM2MjU1MzAsImlhdCI6MTYwMzYyMzczMCwiaXNzdWVyIjoic2VtZXN0ZXJzdGFydGNvZGUtZGF0MyIsInVzZXJuYW1lIjoidXNlciJ9.mLrZ_pPX8GPIpBGnGEnG2eSUCh6Pcrz7Eq0uyEDOr2");
+        obj.put("username", u1.getUserName());
+        obj.put("post", "This is a very good post, please like and share");
+
+        given() //include object in body
+                .contentType("application/json")
+                .body(obj)
+                .when().post("/post/create").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.UNAUTHORIZED_401.getStatusCode());
+    }
+    
+    @Test
+    public void failCreatePostTestNoValidToken() {
+        //Creating a JSON Object
+        JSONObject obj = new JSONObject();
+        obj.put("token", "not_valid");
+        obj.put("username", u1.getUserName());
+        obj.put("post", "This is a very good post, please like and share");
+
+        given() //include object in body
+                .contentType("application/json")
+                .body(obj)
+                .when().post("/post/create").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode());
+    }
+
 }

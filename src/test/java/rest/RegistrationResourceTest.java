@@ -12,6 +12,8 @@ import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.core.UriBuilder;
+import jdk.nashorn.internal.ir.annotations.Ignore;
+import net.minidev.json.JSONObject;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -84,11 +86,19 @@ public class RegistrationResourceTest {
         EMF_Creator.endREST_TestWithDB();
         httpServer.shutdownNow();
     }
-
+    
     @Test
-    public void testUsernameAlreadyExists() {
-        with().contentType("application/json")
-                .when().request("POST", "/register/user/fullname/user1/password/secretpw").then() //post REQUEST
+    public void testUsernameAlreadyExists2() {
+        JSONObject obj = new JSONObject();
+        obj.put("fullname", "full name");
+        obj.put("username", "user1");
+        obj.put("password", "password");
+        obj.put("secretanswer", "secretanswer");
+        
+        
+        with().body(obj) //include object in body
+                .contentType("application/json")
+                .when().request("POST", "/register/user").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.BAD_REQUEST_400.getStatusCode());
     }

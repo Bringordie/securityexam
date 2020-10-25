@@ -39,11 +39,18 @@ public class RegistrationResource {
     SecurityContext securityContext;
     
     @POST
-    @Path("/user/{fullName}/{userName}/{userPass}/{secretAnswer}")
+    @Path("/user")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String createUser(@PathParam("fullName") String fullName, @PathParam("userName") String userName, @PathParam("userPass") String userPass, @PathParam("secretAnswer") String secretAnswer) {
+    public String createUser(String jsonString) {
         String profilePicture = UUID.randomUUID().toString();
         // ## TO DO ADD/RENAME THE PICTURE ALSO
+        
+        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+        String fullName = json.get("fullname").getAsString();
+        String userName = json.get("username").getAsString();
+        String userPass = json.get("password").getAsString();
+        String secretAnswer = json.get("secretanswer").getAsString();
         
         try {
             return GSON.toJson(FACADE.createNormalUser(fullName, userName, userPass, secretAnswer, profilePicture));

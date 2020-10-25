@@ -6,8 +6,11 @@ import com.google.gson.JsonParser;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import entities.Role;
@@ -31,53 +34,55 @@ import utils.EMF_Creator;
 @Path("login")
 public class LoginEndpoint {
 
-  public static final int TOKEN_EXPIRE_TIME = 1000 * 60 * 30; //30 min
-  private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.DEV, EMF_Creator.Strategy.CREATE);
-  public static final UserFacade USER_FACADE = UserFacade.getUserFacade(EMF);
-  
-  @POST
-  @Consumes(MediaType.APPLICATION_JSON)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response login(String jsonString) throws AuthenticationException {
-    JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
-    String username = json.get("username").getAsString();
-    String password = json.get("password").getAsString();
+    public static final int TOKEN_EXPIRE_TIME = 1000 * 60 * 30; //30 min
+    private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.DEV, EMF_Creator.Strategy.CREATE);
+    public static final UserFacade USER_FACADE = UserFacade.getUserFacade(EMF);
 
-    try {
-      User user = USER_FACADE.getVeryfiedUser(username, password);
-      String token = createToken(username, user.getRole());
-      JsonObject responseJson = new JsonObject();
-      responseJson.addProperty("username", username);
-      responseJson.addProperty("token", token);
-      return Response.ok(new Gson().toJson(responseJson)).build();
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response login(String jsonString) throws AuthenticationException {
+        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+        String username = json.get("username").getAsString();
+        String password = json.get("password").getAsString();
 
-    } catch (JOSEException | AuthenticationException ex) {
-      if (ex instanceof AuthenticationException) {
-        throw (AuthenticationException) ex;
-      }
-      Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
+        try {
+            User user = USER_FACADE.getVeryfiedUser(username, password);
+            String token = createToken(username, user.getRole());
+            JsonObject responseJson = new JsonObject();
+            responseJson.addProperty("username", username);
+            responseJson.addProperty("token", token);
+            return Response.ok(new Gson().toJson(responseJson)).build();
+
+        } catch (JOSEException | AuthenticationException ex) {
+            if (ex instanceof AuthenticationException) {
+                throw (AuthenticationException) ex;
+            }
+            Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new AuthenticationException("Invalid username or password! Please try again");
     }
-    throw new AuthenticationException("Invalid username or password! Please try again");
-  }
 
-  private String createToken(String userName, Role role) throws JOSEException {
+    private String createToken(String userName, Role role) throws JOSEException {
 
-    String issuer = "semesterstartcode-dat3";
+        String issuer = "semesterstartcode-dat3";
 
-    JWSSigner signer = new MACSigner(SharedSecret.getSharedKey());
-    Date date = new Date();
-    JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-            .subject(userName)
-            .claim("username", userName)
-            .claim("role", role.getRoleName().toString())
-            .claim("issuer", issuer)
-            .issueTime(date)
-            .expirationTime(new Date(date.getTime() + TOKEN_EXPIRE_TIME))
-            .build();
-    // ERROR HERE
-    SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
-    signedJWT.sign(signer);
-    return signedJWT.serialize();
+        JWSSigner signer = new MACSigner(SharedSecret.getSharedKey());
+        Date date = new Date();
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .subject(userName)
+                .claim("username", userName)
+                .claim("role", role.getRoleName().toString())
+                .claim("issuer", issuer)
+                .issueTime(date)
+                .expirationTime(new Date(date.getTime() + TOKEN_EXPIRE_TIME))
+                .build();
+        // ERROR HERE
+        SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
+        signedJWT.sign(signer);
+        return signedJWT.serialize();
+    }
 
-  }
+
+
 }
