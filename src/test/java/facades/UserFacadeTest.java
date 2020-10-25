@@ -192,5 +192,28 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
+    
+    /**
+     * Test of addFriendRequest method, of class UserFacade success.
+     */
+    @Test
+    public void userAddFriendRequestPass() throws NotFoundException, AuthenticationException {
+        User response = facade.addFriendRequest(u1.getUserName(), u1.getFullName(), u1.getProfilePicture(), u2.getUserName());
+        assertNotNull(response);
+    }
+
+    /**
+     * Test of addFriendRequest method, of class UserFacade fail.
+     */
+    @Test
+    public void userAddFriendRequestFail() throws NotFoundException {
+        try {
+            User response = facade.addFriendRequest(u1.getUserName(), u1.getFullName(), u1.getProfilePicture(), "invalid");
+            fail("Invalid user name");
+        } catch (NullPointerException | NotFoundException ex) {
+            final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
 
 }

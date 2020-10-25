@@ -1,5 +1,6 @@
 package facades;
 
+import entities.FriendRequest;
 import entities.Role;
 import entities.User;
 import entities.UserPosts;
@@ -170,6 +171,27 @@ public class UserFacade {
             em.close();
         }
         return post;
+    }
+    
+    public User addFriendRequest(String username, String fullName, String pictureURL, String request_username) throws NotFoundException {
+        EntityManager em = emf.createEntityManager();
+        User user;
+        FriendRequest friendReq = new FriendRequest(username, fullName, request_username);
+        try {
+            user = em.find(User.class, request_username);
+            if (user == null) {
+                throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
+            }
+            user.addFriendRequest(friendReq);
+            em.getTransaction().begin();
+            em.persist(user);
+            em.getTransaction().commit();
+        } catch (NullPointerException ex) {
+            throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
+        } finally {
+            em.close();
+        }
+        return user;
     }
 
     public static void main(String[] args) throws AlreadyExistsException {
