@@ -1,6 +1,7 @@
 package facades;
 
 import entities.FriendRequest;
+import entities.Friends;
 import entities.Role;
 import entities.User;
 import entities.UserPosts;
@@ -56,7 +57,7 @@ public class UserFacade {
         }
         return user;
     }
-    
+
     public User userResetPassword(String username, String secret, String newPassword) throws AuthenticationException {
         EntityManager em = emf.createEntityManager();
         User user;
@@ -172,7 +173,7 @@ public class UserFacade {
         }
         return post;
     }
-    
+
     public User addFriendRequest(String username, String fullName, String pictureURL, String request_username) throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         User user;
@@ -185,6 +186,38 @@ public class UserFacade {
             user.addFriendRequest(friendReq);
             em.getTransaction().begin();
             em.persist(user);
+            em.getTransaction().commit();
+        } catch (NullPointerException ex) {
+            throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
+        } finally {
+            em.close();
+        }
+        return user;
+    }
+
+    public User acceptFriendRequest(String username, String request_username) throws NotFoundException {
+        EntityManager em = emf.createEntityManager();
+        User user;
+        User requester;
+        try {
+            user = em.find(User.class, username);
+            requester = em.find(User.class, request_username);
+            if (user == null) {
+                throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
+            }
+            //Making the friend connection
+            Friends friendRequester = new Friends(username);
+            Friends friendReceiver = new Friends(request_username);
+            //Adding to each others friend list.
+            user.addToFriendList(friendRequester);
+            requester.addToFriendList(friendReceiver);
+            //Removing friend reuqest
+            FriendRequest friendReq = new FriendRequest(requester.getUserName(), requester.getFullName(), username);
+            user.removeFriendRequest(friendReq);
+            //Persisting
+            em.getTransaction().begin();
+            em.persist(user);
+            em.persist(requester);
             em.getTransaction().commit();
         } catch (NullPointerException ex) {
             throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
