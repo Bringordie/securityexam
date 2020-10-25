@@ -1,6 +1,5 @@
 package rest;
 
-
 import entities.FriendRequest;
 import entities.Friends;
 import entities.User;
@@ -19,6 +18,7 @@ import javax.ws.rs.core.UriBuilder;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import net.minidev.json.JSONObject;
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import static org.hamcrest.Matchers.equalTo;
@@ -36,11 +36,10 @@ public class LoginEndpointTest {
     private static final int SERVER_PORT = 7777;
     private static final String SERVER_URL = "http://localhost/api";
 
-
     static final URI BASE_URI = UriBuilder.fromUri(SERVER_URL).port(SERVER_PORT).build();
     private static HttpServer httpServer;
     private static EntityManagerFactory emf;
-    
+
     private User u1, u2, u3, u4;
     private Role r1, r2;
     private Friends f1, f2;
@@ -99,7 +98,7 @@ public class LoginEndpointTest {
 
             em.persist(r1);
             em.persist(r2);
-            
+
             em.getTransaction().commit();
 
             up1 = new UserPosts("This is a post made by a user");
@@ -107,13 +106,13 @@ public class LoginEndpointTest {
 
             u1.addUserPost(up1);
             u4.addUserPost(up2);
-            
+
             f1 = new Friends(u4.getUserName());
             f2 = new Friends(u1.getUserName());
 
             u1.addToFriendList(f1);
             u2.addToFriendList(f2);
-            
+
             em.getTransaction().begin();
             em.persist(u1);
             em.persist(u2);
@@ -136,59 +135,89 @@ public class LoginEndpointTest {
             em.close();
         }
     }
-    
-    //This is how we hold on to the token after login, similar to that a client must store the token somewhere
-  public static String securityToken;
 
-  //Utility method to login and set the returned securityToken
-  public static void login(String username, String password) {
-    JSONObject json = new JSONObject();
+    //This is how we hold on to the token after login, similar to that a client must store the token somewhere
+    public static String securityToken;
+
+    //Utility method to login and set the returned securityToken
+    public static void login(String username, String password) {
+        JSONObject json = new JSONObject();
         json.put("username", username);
         json.put("password", password);
-    securityToken = given()
-            .contentType("application/json")
-            .body(json)
-            .when().post("/login")
-            .then()
-            .extract().path("token");
-      System.out.println("TOKEN ---> "+securityToken);
-  }
+        securityToken = given()
+                .contentType("application/json")
+                .body(json)
+                .when().post("/login")
+                .then()
+                .extract().path("token");
+        System.out.println("TOKEN ---> " + securityToken);
+    }
 
-  private void logOut() {
-    securityToken = null;
-  }
+    private void logOut() {
+        securityToken = null;
+    }
 
-  @Test
-  public void userNotAuthenticatedTest() {
-    System.out.println("Testing is server UP");
-    JSONObject obj = new JSONObject();
+    @Test
+    public void userNotAuthenticatedTest() {
+        System.out.println("Testing is server UP");
+        JSONObject obj = new JSONObject();
         obj.put("username", "user123");
         obj.put("password", "password");
-        
-    given().contentType("application/json")
-            .body(obj).when().post("/login")
-            .then().statusCode(403);
-  }
-  
-  @Test
-  public void successfullLoginTest() {
-    System.out.println("Testing is server UP");
-    JSONObject obj = new JSONObject();
+
+        given().contentType("application/json")
+                .body(obj).when().post("/login")
+                .then().statusCode(403);
+    }
+
+    @Test
+    public void successfullLoginTest() {
+        System.out.println("Testing is server UP");
+        JSONObject obj = new JSONObject();
         obj.put("username", "user");
         obj.put("password", "test");
+
+        given().contentType("application/json")
+                .body(obj).when().post("/login")
+                .then().assertThat().statusCode(200);
+    }
+
+    @Test
+    public void testLoginFunctionTest() {
+        login("user", "test");
+        assertNotNull(securityToken != null);
+        System.out.println("The token is NOT NULL and it is: " + securityToken);
+    }
+
+    @Test
+    public void resetPasswordPass() {
+        login(u1.getUserName(), "test");
         
-    given().contentType("application/json")
-            .body(obj).when().post("/login")
-            .then().assertThat().statusCode(200);
-  }
-  
-  @Test
-  public void testLoginFunctionTest() {
-    login("user", "test");
-    assertNotNull(securityToken!=null);
-    System.out.println("The token is NOT NULL and it is: " + securityToken);
-  }
+        JSONObject obj = new JSONObject();
+        obj.put("token", securityToken);
+        obj.put("secret", "where I was born");
+        obj.put("newpassword", "new secure password");
 
+        given() //include object in body
+                .contentType("application/json")
+                .body(obj)
+                .when().put("/login/reset/password").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode());
+    }
 
-    
+    @Test
+    public void resetPasswordFail() {
+        JSONObject obj = new JSONObject();
+        obj.put("token", "not_valid");
+        obj.put("username", u1.getUserName());
+        obj.put("post", "This is a very good post, please like and share");
+
+        given() //include object in body
+                .contentType("application/json")
+                .body(obj)
+                .when().put("/login/reset/password").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode());
+    }
+
 }

@@ -7,31 +7,36 @@ import errorhandling.AlreadyExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import errorhandling.AuthenticationException;
+import errorhandling.NotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import utils.EMF_Creator;
 
-
 public class UserFacade {
-  
+
     private static EntityManagerFactory emf;
     private static UserFacade instance;
-    
-    private UserFacade(){}
-    
+
+    private UserFacade() {
+    }
+
     /**
-     * 
+     *
      * @param _emf
      * @return the instance of this facade.
      */
-    public static UserFacade getUserFacade (EntityManagerFactory _emf) {
+    public static UserFacade getUserFacade(EntityManagerFactory _emf) {
         if (instance == null) {
             emf = _emf;
             instance = new UserFacade();
         }
         return instance;
     }
-    
+
     /**
-     * This method is used to check if a user with the given password exists in the DB.
+     * This method is used to check if a user with the given password exists in
+     * the DB.
+     *
      * @param username
      * @param password
      * @return User The verified user.
@@ -51,6 +56,27 @@ public class UserFacade {
         return user;
     }
     
+    public User userResetPassword(String username, String secret, String newPassword) throws AuthenticationException {
+        EntityManager em = emf.createEntityManager();
+        User user;
+        try {
+            user = em.find(User.class, username);
+            Boolean verifySecretPassword = user.verifySecretAnswer(secret);
+            if (user == null || !verifySecretPassword) {
+                throw new AuthenticationException("Invalid user name or secret");
+            }
+            user.setUserPass(newPassword);
+            em.getTransaction().begin();
+            em.persist(user);
+            em.getTransaction().commit();
+        } catch (AuthenticationException | NullPointerException ex) {
+            throw new AuthenticationException("Invalid user name or secret");
+        } finally {
+            em.close();
+        }
+        return user;
+    }
+
     public User createNormalUser(String fullName, String userName, String userPass, String secretAnswer, String profilePicture) throws AlreadyExistsException {
         EntityManager em = emf.createEntityManager();
         User userregister = new User(fullName, userName, userPass, secretAnswer, profilePicture);
@@ -58,7 +84,7 @@ public class UserFacade {
         userregister.addRole(userRole);
         try {
             User user = em.find(User.class, userName);
-            if (user != null ) {
+            if (user != null) {
                 throw new AlreadyExistsException("User name already exists");
             }
             em.getTransaction().begin();
@@ -69,7 +95,7 @@ public class UserFacade {
         }
         return userregister;
     }
-    
+
     public User adminCreateUser(String fullName, String userName, String userPass, String secretAnswer, String profilePicture) throws AlreadyExistsException {
         EntityManager em = emf.createEntityManager();
         User userregister = new User(fullName, userName, userPass, secretAnswer, profilePicture);
@@ -77,7 +103,7 @@ public class UserFacade {
         userregister.addRole(userRole);
         try {
             User user = em.find(User.class, userName);
-            if (user != null ) {
+            if (user != null) {
                 throw new AlreadyExistsException("User name already exists");
             }
             em.getTransaction().begin();
@@ -88,9 +114,10 @@ public class UserFacade {
         }
         return userregister;
     }
-    
+
     /**
      * This method is used to change a users password.
+     *
      * @param username
      * @param newPassword
      * @return User This returns the User that had his pw changed.
@@ -109,7 +136,7 @@ public class UserFacade {
         }
         return user;
     }
-    
+
     public boolean createPost(String username, String userPost) {
         EntityManager em = emf.createEntityManager();
         User user;
@@ -117,24 +144,39 @@ public class UserFacade {
         try {
             em.getTransaction().begin();
             user = em.find(User.class, username);
-            if(user == null) {
-            return false;
+            if (user == null) {
+                return false;
             }
             user.addUserPost(post);
             em.persist(user);
             em.getTransaction().commit();
-        }finally {
+        } finally {
             em.close();
         }
         return true;
     }
-    
 
-     public static void main(String[] args) throws AlreadyExistsException {
-         emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.DEV, EMF_Creator.Strategy.CREATE);
+    public List<UserPosts> getPosts(String username) throws NotFoundException {
+        EntityManager em = emf.createEntityManager();
+        User user;
+        List<UserPosts> post = new ArrayList();
+        try {
+            em.getTransaction().begin();
+            user = em.find(User.class, username);
+            post = user.getUserPosts();
+        } catch (NullPointerException ex) {
+            throw new NotFoundException("User name could not be found");
+        } finally {
+            em.close();
+        }
+        return post;
+    }
+
+    public static void main(String[] args) throws AlreadyExistsException {
+        emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.DEV, EMF_Creator.Strategy.CREATE);
         UserFacade UF = new UserFacade();
-         //System.out.println(UF.createSupportUser("testsupport", "test2020"));
-         //UF.changeUserPW("user", "test12");
+        //System.out.println(UF.createSupportUser("testsupport", "test2020"));
+        //UF.changeUserPW("user", "test12");
 //         EntityManager em = emf.createEntityManager();
 //         User user = em.find(User.class, "user");
 //         System.out.println(user.verifyPassword("test12"));

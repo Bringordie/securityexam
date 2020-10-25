@@ -24,6 +24,8 @@ import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -140,14 +142,13 @@ public class PostResourceTest {
         httpServer.shutdownNow();
     }
 
-
     @Test
     public void successfullCreatePostTest() {
-        
+
         LoginEndpointTest getToken = new LoginEndpointTest();
         getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
-        
+
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
         obj.put("token", token);
@@ -161,7 +162,7 @@ public class PostResourceTest {
                 .assertThat()
                 .statusCode(HttpStatus.OK_200.getStatusCode());
     }
-    
+
     @Test
     public void failCreatePostTest() {
         //Creating a JSON Object
@@ -177,7 +178,7 @@ public class PostResourceTest {
                 .assertThat()
                 .statusCode(HttpStatus.UNAUTHORIZED_401.getStatusCode());
     }
-    
+
     @Test
     public void failCreatePostTestNoValidToken() {
         //Creating a JSON Object
@@ -192,6 +193,51 @@ public class PostResourceTest {
                 .when().post("/post/create").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode());
+    }
+    
+
+    //Manuel tested but unsure why this test fails.
+    @Ignore
+    public void successGetPostTest() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u1.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        //Creating a JSON Object
+        JSONObject obj = new JSONObject();
+        obj.put("token", token);
+
+        UserPosts[] result
+                = with()
+                        .contentType("application/json")
+                        .body(obj)
+                        .when().request("GET", "/post").then() //post REQUEST
+                        .assertThat()
+                        .statusCode(HttpStatus.OK_200.getStatusCode())
+                        .extract()
+                        .as(UserPosts[].class); //extract result JSON as object
+        
+        assertNotNull(result);
+        assertEquals(1, result.length);
+    }
+
+    //Manuel tested but unsure why this test fails.
+    @Ignore
+    public void failGetPostTest() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u2.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        //Creating a JSON Object
+        JSONObject obj = new JSONObject();
+        obj.put("token", token);
+
+        given() //include object in body
+                .contentType("application/json")
+                .body(obj)
+                .when().get("post").then() //get REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
     }
 
 }

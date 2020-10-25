@@ -6,14 +6,18 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.nimbusds.jose.JOSEException;
 import entities.User;
+import entities.UserPosts;
 import errorhandling.AlreadyExistsException;
 import errorhandling.AuthenticationException;
+import errorhandling.NotFoundException;
 import facades.UserFacade;
 import java.text.ParseException;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
@@ -41,6 +45,30 @@ public class PostResource {
     @Context
     SecurityContext securityContext;
 
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String getPosts(String jsonString) throws ParseException, JOSEException, AuthenticationException, NotFoundException {
+        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+        JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
+        String token = json.get("token").getAsString();
+        UserPrincipal userPrin;
+        try {
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+        } catch (JOSEException | AuthenticationException ex) {
+            throw new WebApplicationException(ex.getMessage(), 401);
+        }
+
+        String username = userPrin.getName();
+        List<UserPosts> response;
+        response = FACADE.getPosts(username);
+        if (response.isEmpty()) {
+            throw new WebApplicationException("This user has no posts", 404);
+        }
+
+        return GSON.toJson(response);
+    }
+
     @POST
     @Path("/create")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -66,6 +94,5 @@ public class PostResource {
 
         return GSON.toJson("Post has successfully been created");
     }
-
 
 }

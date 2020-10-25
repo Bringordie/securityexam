@@ -1,6 +1,7 @@
 package security;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.nimbusds.jose.JOSEException;
@@ -28,7 +29,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import errorhandling.AuthenticationException;
 import errorhandling.GenericExceptionMapper;
+import java.text.ParseException;
 import javax.persistence.EntityManagerFactory;
+import javax.ws.rs.PUT;
+import javax.ws.rs.WebApplicationException;
 import utils.EMF_Creator;
 
 @Path("login")
@@ -37,6 +41,7 @@ public class LoginEndpoint {
     public static final int TOKEN_EXPIRE_TIME = 1000 * 60 * 30; //30 min
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.DEV, EMF_Creator.Strategy.CREATE);
     public static final UserFacade USER_FACADE = UserFacade.getUserFacade(EMF);
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -63,6 +68,33 @@ public class LoginEndpoint {
         throw new AuthenticationException("Invalid username or password! Please try again");
     }
 
+    @PUT
+    @Path("/reset/password")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String resetPassword(String jsonString) throws AuthenticationException, ParseException {
+        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+        JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
+        String token = json.get("token").getAsString();
+        String secret = json.get("secret").getAsString();
+        String newpassword = json.get("newpassword").getAsString();
+        UserPrincipal userPrin;
+        try {
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+        } catch (JOSEException | AuthenticationException ex) {
+            throw new WebApplicationException(ex.getMessage(), 401);
+        }
+        String username = userPrin.getName();
+        User user;
+        try {
+            user = USER_FACADE.userResetPassword(username, secret, newpassword);
+        } catch (AuthenticationException ex) {
+            throw new AuthenticationException("Invalid username or password! Please try again");
+            //Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return GSON.toJson("Password has been resat for user.");
+    }
+
     private String createToken(String userName, Role role) throws JOSEException {
 
         String issuer = "semesterstartcode-dat3";
@@ -82,7 +114,5 @@ public class LoginEndpoint {
         signedJWT.sign(signer);
         return signedJWT.serialize();
     }
-
-
 
 }

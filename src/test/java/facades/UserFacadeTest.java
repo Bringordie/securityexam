@@ -5,6 +5,8 @@ import entities.Friends;
 import entities.Role;
 import entities.User;
 import entities.UserPosts;
+import errorhandling.AuthenticationException;
+import errorhandling.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +19,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import utils.EMF_Creator;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 public class UserFacadeTest {
 
@@ -68,7 +73,7 @@ public class UserFacadeTest {
 
             em.persist(r1);
             em.persist(r2);
-            
+
             em.getTransaction().commit();
 
             up1 = new UserPosts("This is a post made by a user");
@@ -76,13 +81,13 @@ public class UserFacadeTest {
 
             u1.addUserPost(up1);
             u4.addUserPost(up2);
-            
+
             f1 = new Friends(u4.getUserName());
             f2 = new Friends(u1.getUserName());
 
             u1.addToFriendList(f1);
             u2.addToFriendList(f2);
-            
+
             em.getTransaction().begin();
             em.persist(u1);
             em.persist(u2);
@@ -116,7 +121,7 @@ public class UserFacadeTest {
         Boolean response = facade.createPost(u2.getUserName(), "Today was a very good day. - End of diary");
         assertEquals(response, true);
     }
-    
+
     /**
      * Test of addPost method, of class UserFacade fail.
      */
@@ -125,6 +130,67 @@ public class UserFacadeTest {
         //UserPosts post = new UserPosts("Today was a very good day. - End of diary");
         Boolean response = facade.createPost("notfound", "Today was a very good day. - End of diary");
         assertEquals(response, false);
+    }
+
+    /**
+     * Test of getPosts method, of class UserFacade success.
+     */
+    @Test
+    public void testGetPostsSuccess() throws NotFoundException {
+        //UserPosts post = new UserPosts("Today was a very good day. - End of diary");
+        List<UserPosts> response = facade.getPosts(u1.getUserName());
+        assertThat(response.size(), equalTo(u1.getUserPosts().size()));
+    }
+
+    /**
+     * Test of getPosts method, of class UserFacade fail.
+     */
+    @Test
+    public void testGetPostsFail() throws NotFoundException {
+        try {
+            List<UserPosts> response = facade.getPosts("notfound");
+            fail("This will fail as the username doesn't exist");
+        } catch (NotFoundException | NullPointerException ex) {
+            final String msg = "User name could not be found";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
+    
+    /**
+     * Test of getUserResetPassword method, of class UserFacade success.
+     */
+    @Test
+    public void userResetPasswordPass() throws NotFoundException, AuthenticationException {
+        User response = facade.userResetPassword(u1.getUserName(), "where I was born", "new password");
+        assertNotNull(response);
+    }
+
+    /**
+     * Test of getUserResetPassword method, of class UserFacade fail.
+     */
+    @Test
+    public void userResetPasswordFail() throws NotFoundException, AuthenticationException {
+        try {
+            User response = facade.userResetPassword("incorrect", "incorrect", "incorrect");
+            fail("Invalid user name or secret");
+        } catch (NullPointerException | AuthenticationException ex) {
+            final String msg = "Invalid user name or secret";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
+    
+    /**
+     * Test of getUserResetPassword method, of class UserFacade fail.
+     */
+    @Test
+    public void userResetPasswordFail2() throws NotFoundException, AuthenticationException {
+        try {
+            User response = facade.userResetPassword(u1.getUserName(), "incorrect", "new password");
+            fail("Invalid user name or secret");
+        } catch (NullPointerException | AuthenticationException ex) {
+            final String msg = "Invalid user name or secret";
+            assertEquals(msg, ex.getMessage());
+        }
     }
 
 }
