@@ -62,7 +62,6 @@ public class PostResourceTest {
         //This method must be called before you request the EntityManagerFactory
         EMF_Creator.startREST_TestWithDB();
         emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.TEST, EMF_Creator.Strategy.CREATE);
-
         httpServer = startServer();
         //Setup RestAssured
         RestAssured.baseURI = SERVER_URL;

@@ -198,8 +198,16 @@ public class UserFacadeTest {
      */
     @Test
     public void userAddFriendRequestPass() throws NotFoundException, AuthenticationException {
-        User response = facade.addFriendRequest(u1.getUserName(), u1.getFullName(), u1.getProfilePicture(), u2.getUserName());
+        assertEquals(1, u3.getFriendRequests().size());
+        
+        User response = facade.addFriendRequest(u3.getUserName(), u2.getUserName());
+        
+        em = emf.createEntityManager();
+        User findu3 = em.find(User.class, u3.getUserName());
+        assertEquals(2, findu3.getFriendRequests().size());
+        em.close();
         assertNotNull(response);
+        
     }
 
     /**
@@ -208,7 +216,7 @@ public class UserFacadeTest {
     @Test
     public void userAddFriendRequestFail() throws NotFoundException {
         try {
-            User response = facade.addFriendRequest(u1.getUserName(), u1.getFullName(), u1.getProfilePicture(), "invalid");
+            User response = facade.addFriendRequest(u1.getUserName(), "invalid");
             fail("Invalid user name");
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
@@ -221,24 +229,21 @@ public class UserFacadeTest {
      */
     @Test
     public void acceptFriendRequestPass() throws NotFoundException, AuthenticationException {
-        assertEquals(0, u4.getFriendList().size());
-        assertEquals(1, u2.getFriendList().size());
+        assertEquals(0, u3.getFriendList().size());
         User response = new User();
         try {
             //Creating a friend request
-            facade.addFriendRequest(u2.getUserName(), u2.getFullName(),u2.getProfilePicture(), u4.getUserName());
+            response = facade.addFriendRequest(u3.getUserName(), u2.getUserName());
             //Accepting friend request
-            response = facade.acceptFriendRequest(u1.getUserName(), u4.getUserName());
+            response = facade.acceptFriendRequest(u3.getUserName(), u2.getUserName());
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
         }
         assertNotNull(response);
         
         em = emf.createEntityManager();
-        User findu4 = em.find(User.class, u4.getUserName());
-        User findu2 = em.find(User.class, u2.getUserName());
-        assertEquals(1, findu4.getFriendList().size());
-        assertEquals(2, findu2.getFriendList().size());
+        User findu3 = em.find(User.class, u3.getUserName());
+        assertEquals(1, findu3.getFriendList().size());
         em.close();
     }
 

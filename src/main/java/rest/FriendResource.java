@@ -58,17 +58,42 @@ public class FriendResource {
         }
         
         String username = userPrin.getName();
-        String fullName = json.get("fullName").getAsString();
-        String pictureURL = json.get("pictureURL").getAsString();
-        String request_username = json.get("request_username").getAsString();
+        String requestMadeByUsername = json.get("request_username").getAsString();
         User user;
         try {
-            user = FACADE.addFriendRequest(username, fullName, pictureURL, request_username);
+            user = FACADE.addFriendRequest(username, requestMadeByUsername);
         } catch (NotFoundException ex) {
             throw new WebApplicationException("The requested friend could not be found", 404);
         }
         
         return GSON.toJson("Friend request has been sent");
+    }
+    
+    @POST
+    @Path("/accept")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String acceptFriendRequest(String jsonString) throws NotFoundException, ParseException {
+        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+        JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
+        String token = json.get("token").getAsString();
+        UserPrincipal userPrin;
+        try {
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+        } catch (JOSEException | AuthenticationException ex) {
+            throw new WebApplicationException(ex.getMessage(), 401);
+        }
+        
+        String username = userPrin.getName();
+        String request_username = json.get("request_username").getAsString();
+        User user;
+        try {
+            user = FACADE.acceptFriendRequest(username, request_username);
+        } catch (NotFoundException ex) {
+            throw new WebApplicationException("The requested friend could not be found", 404);
+        }
+        
+        return GSON.toJson("Friend request has been accepted");
     }
 
 }

@@ -7,6 +7,7 @@ import entities.Friends;
 import entities.Role;
 import entities.User;
 import entities.UserPosts;
+import errorhandling.NotFoundException;
 import facades.UserFacade;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
@@ -45,6 +46,7 @@ public class FriendResourceTest {
     private static HttpServer httpServer;
     private static EntityManagerFactory emf;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static UserFacade facade;
 
     private User u1, u2, u3, u4;
     private Role r1, r2;
@@ -62,7 +64,7 @@ public class FriendResourceTest {
         //This method must be called before you request the EntityManagerFactory
         EMF_Creator.startREST_TestWithDB();
         emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.TEST, EMF_Creator.Strategy.CREATE);
-
+        facade = UserFacade.getUserFacade(emf);
         httpServer = startServer();
         //Setup RestAssured
         RestAssured.baseURI = SERVER_URL;
@@ -104,12 +106,12 @@ public class FriendResourceTest {
             u1.addUserPost(up1);
             u4.addUserPost(up2);
 
-            f1 = new Friends(u4.getUserName());
-            f2 = new Friends(u1.getUserName());
-
-            u1.addToFriendList(f1);
-            u2.addToFriendList(f2);
-
+            // Out commented these as it's easier to have an overview of the friend tests.
+//            f1 = new Friends(u4.getUserName());
+//            f2 = new Friends(u1.getUserName());
+//
+//            u1.addToFriendList(f1);
+//            u2.addToFriendList(f2);
             em.getTransaction().begin();
             em.persist(u1);
             em.persist(u2);
@@ -150,10 +152,8 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("fullName", u1.getFullName());
         obj.put("token", token);
-        obj.put("pictureURL", u1.getProfilePicture());
-        obj.put("request_username", u2.getUserName());
+        obj.put("request_username", u3.getUserName());
 
         String response = with()
                 .contentType("application/json")
@@ -176,15 +176,68 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("fullName", u1.getFullName());
         obj.put("token", token);
-        obj.put("pictureURL", u1.getProfilePicture());
         obj.put("request_username", "not found");
 
-         with()
+        with()
                 .contentType("application/json")
                 .body(obj)
                 .when().request("POST", "/friend/add").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
+
+    }
+
+    @Ignore
+    public void successAcceptFriendRequest() throws NotFoundException {
+        EntityManager em = emf.createEntityManager();
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u4.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        //assertEquals(0, u4.getFriendList().size());
+        User user = facade.addFriendRequest(u4.getUserName(), u2.getUserName());
+
+        //User findu4 = em.find(User.class, u4.getUserName());
+        assertEquals(1, user.getFriendRequests().size());
+
+        //Creating a JSON Object
+        JSONObject json = new JSONObject();
+        json.put("request_username", u2.getFullName());
+        json.put("token", token);
+
+        String response = with()
+                .contentType("application/json")
+                .body(json)
+                .when().request("POST", "/friend/accept").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .extract()
+                .as(String.class); //extract result JSON as object
+
+        assertNotNull(response);
+        assertEquals("Friend request has been accepted", response);
+        User friendRequestLength = em.find(User.class, u4.getUserName());
+        assertEquals(0, friendRequestLength.getFriendRequests().size());
+        assertEquals(1, friendRequestLength.getFriendList().size());
+        em.close();
+    }
+
+    @Test
+    public void failAcceptFriendRequest() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u1.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        //Creating a JSON Object
+        JSONObject obj = new JSONObject();
+        obj.put("token", token);
+        obj.put("request_username", "not found");
+
+        with()
+                .contentType("application/json")
+                .body(obj)
+                .when().request("POST", "/friend/accept").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
 

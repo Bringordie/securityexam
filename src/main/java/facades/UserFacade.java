@@ -174,17 +174,18 @@ public class UserFacade {
         return post;
     }
 
-    public User addFriendRequest(String username, String fullName, String pictureURL, String request_username) throws NotFoundException {
+    public User addFriendRequest(String requestReceiverUsername, String requestMadeByUsername) throws NotFoundException {
         EntityManager em = emf.createEntityManager();
-        User user;
-        FriendRequest friendReq = new FriendRequest(username, fullName, request_username);
+        User user, requester;
         try {
-            user = em.find(User.class, request_username);
+            em.getTransaction().begin();
+            user = em.find(User.class, requestReceiverUsername);
+            requester = em.find(User.class, requestMadeByUsername);
             if (user == null) {
                 throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
             }
+            FriendRequest friendReq = new FriendRequest(requester.getUserName(), requester.getFullName(), requester.getProfilePicture());
             user.addFriendRequest(friendReq);
-            em.getTransaction().begin();
             em.persist(user);
             em.getTransaction().commit();
         } catch (NullPointerException ex) {
@@ -209,10 +210,10 @@ public class UserFacade {
             Friends friendRequester = new Friends(username);
             Friends friendReceiver = new Friends(request_username);
             //Adding to each others friend list.
-            user.addToFriendList(friendRequester);
-            requester.addToFriendList(friendReceiver);
+            user.addToFriendList(friendReceiver);
+            requester.addToFriendList(friendRequester);
             //Removing friend reuqest
-            FriendRequest friendReq = new FriendRequest(requester.getUserName(), requester.getFullName(), username);
+            FriendRequest friendReq = new FriendRequest(requester.getUserName(), requester.getFullName(), requester.getProfilePicture());
             user.removeFriendRequest(friendReq);
             //Persisting
             em.getTransaction().begin();
@@ -227,13 +228,5 @@ public class UserFacade {
         return user;
     }
 
-    public static void main(String[] args) throws AlreadyExistsException {
-        emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.DEV, EMF_Creator.Strategy.CREATE);
-        UserFacade UF = new UserFacade();
-        //System.out.println(UF.createSupportUser("testsupport", "test2020"));
-        //UF.changeUserPW("user", "test12");
-//         EntityManager em = emf.createEntityManager();
-//         User user = em.find(User.class, "user");
-//         System.out.println(user.verifyPassword("test12"));
-    }
+
 }
