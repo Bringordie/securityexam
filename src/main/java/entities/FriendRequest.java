@@ -60,7 +60,7 @@ public class FriendRequest implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-
+    
     @Override
     public String toString() {
         return "FriendRequest{" + "id=" + id + ", requestUsername=" + requestUsername + ", fullName=" + fullName + ", pictureUrl=" + pictureUrl + '}';

@@ -73,7 +73,7 @@ public class FriendResource {
     @Path("/accept")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String acceptFriendRequest(String jsonString) throws NotFoundException, ParseException {
+    public String acceptFriendRequest(String jsonString) throws NotFoundException, ParseException, AuthenticationException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
         String token = json.get("token").getAsString();
@@ -91,6 +91,8 @@ public class FriendResource {
             user = FACADE.acceptFriendRequest(username, request_username);
         } catch (NotFoundException ex) {
             throw new WebApplicationException("The requested friend could not be found", 404);
+        } catch (AuthenticationException ex) {
+            throw new WebApplicationException("Something unexpected went wrong. This request has been logged for further investigation", 400);
         }
         
         return GSON.toJson("Friend request has been accepted");

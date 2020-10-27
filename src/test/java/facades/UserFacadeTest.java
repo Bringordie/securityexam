@@ -251,7 +251,7 @@ public class UserFacadeTest {
      * Test of acceptFriendRequest method, of class UserFacade fail.
      */
     @Test
-    public void acceptFriendRequestFail() throws NotFoundException {
+    public void acceptFriendRequestFail() throws NotFoundException, AuthenticationException {
         try {
             User response = facade.acceptFriendRequest(u2.getUserName(), "invalid");
             fail("Invalid user name");

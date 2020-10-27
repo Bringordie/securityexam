@@ -242,5 +242,25 @@ public class FriendResourceTest {
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
 
     }
+    
+    @Test
+    public void hardFailAcceptFriendRequest() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u1.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        //Creating a JSON Object
+        JSONObject obj = new JSONObject();
+        obj.put("token", token);
+        obj.put("request_username", u4.getUserName());
+
+        with()
+                .contentType("application/json")
+                .body(obj)
+                .when().request("POST", "/friend/accept").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.BAD_REQUEST_400.getStatusCode());
+
+    }
 
 }

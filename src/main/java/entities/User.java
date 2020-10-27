@@ -177,6 +177,29 @@ public class User implements Serializable {
     public List<FriendRequest> getFriendRequests() {
         return friendRequests;
     }
+    
+    public Boolean deleteSpecificFriendRequest(String requestUserName) {
+        Boolean response = false;
+        for (FriendRequest friendRequest : friendRequests) {
+        if (friendRequest.getRequestUsername().equals(requestUserName)) {
+            friendRequests.remove(friendRequest);
+            response = true;
+            break;
+        }
+    }
+        return response;
+    }
+    
+    public Boolean validateSpecificFriendRequest(String requestUserName) {
+        Boolean response = false;
+        for (FriendRequest friendRequest : friendRequests) {
+        if (friendRequest.getRequestUsername().equals(requestUserName)) {
+            response = true;
+            break;
+        }
+    }
+        return response;
+    }
 
     @Override
     public String toString() {
