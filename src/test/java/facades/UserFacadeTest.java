@@ -78,19 +78,8 @@ public class UserFacadeTest {
             em.persist(r2);
 
             em.getTransaction().commit();
-
-            up1 = new UserPosts("This is a post made by a user");
-            up2 = new UserPosts("This is a post made by a admin");
-
-            u1.addUserPost(up1);
-            u4.addUserPost(up2);
-
-            f1 = new Friends(u4.getUserName());
-            f2 = new Friends(u1.getUserName());
-
-            u1.addToFriendList(f1);
-            u4.addToFriendList(f2);
-
+            
+            //Creating users
             em.getTransaction().begin();
             em.persist(u1);
             em.persist(u2);
@@ -99,8 +88,20 @@ public class UserFacadeTest {
 
             em.getTransaction().commit();
 
-            fr1 = new FriendRequest(u2.getUserName(), u2.getFullName(), u2.getProfilePicture());
-            fr2 = new FriendRequest(u1.getUserName(), u1.getFullName(), u1.getProfilePicture());
+            up1 = new UserPosts("This is a post made by a user");
+            up2 = new UserPosts("This is a post made by a admin");
+
+            u1.addUserPost(up1);
+            u4.addUserPost(up2);
+
+            f1 = new Friends(u4.getId());
+            f2 = new Friends(u1.getId());
+
+            u1.addToFriendList(f1);
+            u4.addToFriendList(f2);
+
+            fr1 = new FriendRequest(u2.getId(), u2.getFullName(), u2.getProfilePicture());
+            fr2 = new FriendRequest(u1.getId(), u1.getFullName(), u1.getProfilePicture());
 
             u1.addFriendRequest(fr1);
             u3.addFriendRequest(fr2);
@@ -121,7 +122,7 @@ public class UserFacadeTest {
     @Test
     public void testAddPostPass() throws Exception {
         //UserPosts post = new UserPosts("Today was a very good day. - End of diary");
-        Boolean response = facade.createPost(u2.getUserName(), "Today was a very good day. - End of diary");
+        Boolean response = facade.createPost(u2.getId(), "Today was a very good day. - End of diary");
         assertEquals(response, true);
     }
 
@@ -131,7 +132,7 @@ public class UserFacadeTest {
     @Test
     public void testAddPostFail() throws Exception {
         //UserPosts post = new UserPosts("Today was a very good day. - End of diary");
-        Boolean response = facade.createPost("notfound", "Today was a very good day. - End of diary");
+        Boolean response = facade.createPost(404, "Today was a very good day. - End of diary");
         assertEquals(response, false);
     }
 
@@ -141,7 +142,7 @@ public class UserFacadeTest {
     @Test
     public void testGetPostsSuccess() throws NotFoundException {
         //UserPosts post = new UserPosts("Today was a very good day. - End of diary");
-        List<UserPosts> response = facade.getPosts(u1.getUserName());
+        List<UserPosts> response = facade.getPosts(u1.getId());
         assertThat(response.size(), equalTo(u1.getUserPosts().size()));
     }
 
@@ -151,7 +152,7 @@ public class UserFacadeTest {
     @Test
     public void testGetPostsFail() throws NotFoundException {
         try {
-            List<UserPosts> response = facade.getPosts("notfound");
+            List<UserPosts> response = facade.getPosts(404);
             fail("This will fail as the username doesn't exist");
         } catch (NotFoundException | NullPointerException ex) {
             final String msg = "User name could not be found";
@@ -164,7 +165,7 @@ public class UserFacadeTest {
      */
     @Test
     public void userResetPasswordPass() throws NotFoundException, AuthenticationException {
-        User response = facade.userResetPassword(u1.getUserName(), "where I was born", "new password");
+        User response = facade.userResetPassword(u1.getId(), "where I was born", "new password");
         assertNotNull(response);
     }
 
@@ -174,7 +175,7 @@ public class UserFacadeTest {
     @Test
     public void userResetPasswordFail() throws NotFoundException, AuthenticationException {
         try {
-            User response = facade.userResetPassword("incorrect", "incorrect", "incorrect");
+            User response = facade.userResetPassword(404, "incorrect", "incorrect");
             fail("Invalid user name or secret");
         } catch (NullPointerException | AuthenticationException ex) {
             final String msg = "Invalid user name or secret";
@@ -188,7 +189,7 @@ public class UserFacadeTest {
     @Test
     public void userResetPasswordFail2() throws NotFoundException, AuthenticationException {
         try {
-            User response = facade.userResetPassword(u1.getUserName(), "incorrect", "new password");
+            User response = facade.userResetPassword(u1.getId(), "incorrect", "new password");
             fail("Invalid user name or secret");
         } catch (NullPointerException | AuthenticationException ex) {
             final String msg = "Invalid user name or secret";
@@ -203,10 +204,10 @@ public class UserFacadeTest {
     public void userAddFriendRequestPass() throws NotFoundException, AuthenticationException {
         assertEquals(1, u3.getFriendRequests().size());
         
-        User response = facade.addFriendRequest(u3.getUserName(), u2.getUserName());
+        User response = facade.addFriendRequest(u3.getId(), u2.getId());
         
         em = emf.createEntityManager();
-        User findu3 = em.find(User.class, u3.getUserName());
+        User findu3 = em.find(User.class, u3.getId());
         assertEquals(2, findu3.getFriendRequests().size());
         em.close();
         assertNotNull(response);
@@ -219,7 +220,7 @@ public class UserFacadeTest {
     @Test
     public void userAddFriendRequestFail() throws NotFoundException {
         try {
-            User response = facade.addFriendRequest(u1.getUserName(), "invalid");
+            User response = facade.addFriendRequest(u1.getId(), 404);
             fail("Invalid user name");
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
@@ -236,16 +237,16 @@ public class UserFacadeTest {
         User response = new User();
         try {
             //Creating a friend request
-            response = facade.addFriendRequest(u3.getUserName(), u2.getUserName());
+            response = facade.addFriendRequest(u3.getId(), u2.getId());
             //Accepting friend request
-            response = facade.acceptFriendRequest(u3.getUserName(), u2.getUserName());
+            response = facade.acceptFriendRequest(u3.getId(), u2.getId());
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
         }
         assertNotNull(response);
         
         em = emf.createEntityManager();
-        User findu3 = em.find(User.class, u3.getUserName());
+        User findu3 = em.find(User.class, u3.getId());
         assertEquals(1, findu3.getFriendList().size());
         em.close();
     }
@@ -256,7 +257,7 @@ public class UserFacadeTest {
     @Test
     public void acceptFriendRequestFail() throws NotFoundException, AuthenticationException {
         try {
-            User response = facade.acceptFriendRequest(u2.getUserName(), "invalid");
+            User response = facade.acceptFriendRequest(u2.getId(), 512);
             fail("Invalid user name");
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
@@ -273,13 +274,13 @@ public class UserFacadeTest {
         User response = new User();
         try {
             //Removing friend
-            facade.removeFriend(u1.getUserName(), u4.getUserName());
+            facade.removeFriend(u1.getId(), u4.getId());
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
         }
         
         em = emf.createEntityManager();
-        User findu1 = em.find(User.class, u1.getUserName());
+        User findu1 = em.find(User.class, u1.getId());
         assertEquals(0, findu1.getFriendList().size());
         em.close();
     }
@@ -290,7 +291,7 @@ public class UserFacadeTest {
     @Test
     public void removeFriendFail() throws NotFoundException, AuthenticationException {
         try {
-            User response = facade.removeFriend(u1.getUserName(), "Doesn't exist");
+            User response = facade.removeFriend(u1.getId(), 404);
             fail("Invalid user name");
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
@@ -307,13 +308,13 @@ public class UserFacadeTest {
         User response = new User();
         try {
             //Removing friend request
-            facade.removeFriendRequest(u1.getUserName(), u2.getUserName());
+            facade.removeFriendRequest(u1.getId(), u2.getId());
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
         }
         
         em = emf.createEntityManager();
-        User findu1 = em.find(User.class, u1.getUserName());
+        User findu1 = em.find(User.class, u1.getId());
         assertEquals(0, findu1.getFriendRequests().size());
         em.close();
     }
@@ -324,7 +325,7 @@ public class UserFacadeTest {
     @Test
     public void removeFriendRequestFail() throws NotFoundException, AuthenticationException {
         try {
-            User response = facade.removeFriendRequest(u1.getUserName(), "Doesn't exist");
+            User response = facade.removeFriendRequest(u1.getId(), 404);
             fail("Invalid user name");
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "No friend request found.";

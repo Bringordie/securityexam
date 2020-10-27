@@ -60,11 +60,11 @@ public class FriendResource {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
         
-        String username = userPrin.getName();
-        String requestMadeByUsername = json.get("request_username").getAsString();
+        int usernameID = userPrin.getNameID();
+        int requestMadeByUsernameID = json.get("request_username").getAsInt();
         User user;
         try {
-            user = FACADE.addFriendRequest(username, requestMadeByUsername);
+            user = FACADE.addFriendRequest(usernameID, requestMadeByUsernameID);
         } catch (NotFoundException ex) {
             throw new WebApplicationException("The requested friend could not be found", 404);
         }
@@ -87,11 +87,11 @@ public class FriendResource {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
         
-        String username = userPrin.getName();
-        String request_username = json.get("request_username").getAsString();
+        int usernameID = userPrin.getNameID();
+        int request_usernameID = json.get("request_usernameID").getAsInt();
         User user;
         try {
-            user = FACADE.acceptFriendRequest(username, request_username);
+            user = FACADE.acceptFriendRequest(usernameID, request_usernameID);
         } catch (NotFoundException ex) {
             throw new WebApplicationException("The requested friend could not be found", 404);
         } catch (AuthenticationException ex) {
@@ -116,11 +116,11 @@ public class FriendResource {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
         
-        String username = userPrin.getName();
-        String request_username = json.get("request_username").getAsString();
+        int usernameID = userPrin.getNameID();
+        int request_usernameID = json.get("request_username").getAsInt();
         User user;
         try {
-            user = FACADE.removeFriend(username, request_username);
+            user = FACADE.removeFriend(usernameID, request_usernameID);
         } catch (NotFoundException ex) {
             throw new WebApplicationException("The requested friend could not be found", 404);
         } 
@@ -143,8 +143,8 @@ public class FriendResource {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
         
-        String username = userPrin.getName();
-        String request_username = json.get("request_username").getAsString();
+        int username = userPrin.getNameID();
+        int request_username = json.get("request_username").getAsInt();
         User user;
         try {
             user = FACADE.removeFriendRequest(username, request_username);
@@ -170,7 +170,6 @@ public class FriendResource {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
         
-        String username = userPrin.getName();
         String searchName = json.get("search_name").getAsString();
         List<UserDTO> dtoList;
         try {

@@ -26,7 +26,7 @@ public class FriendRequest implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "requested_friend")
-    private String requestUsername;
+    private int requestUsernameID;
     @Column(name = "full_name")
     private String fullName;
     @Column(name = "picture_url")
@@ -35,14 +35,14 @@ public class FriendRequest implements Serializable {
     public FriendRequest() {
     }
 
-    public FriendRequest(String requestUsername, String fullName, String pictureUrl) {
-        this.requestUsername = requestUsername;
+    public FriendRequest(int requestUsernameID, String fullName, String pictureUrl) {
+        this.requestUsernameID = requestUsernameID;
         this.fullName = fullName;
         this.pictureUrl = pictureUrl;
     }
 
-    public String getRequestUsername() {
-        return requestUsername;
+    public int getRequestUsername() {
+        return requestUsernameID;
     }
 
     public String getFullName() {
@@ -63,7 +63,7 @@ public class FriendRequest implements Serializable {
     
     @Override
     public String toString() {
-        return "FriendRequest{" + "id=" + id + ", requestUsername=" + requestUsername + ", fullName=" + fullName + ", pictureUrl=" + pictureUrl + '}';
+        return "FriendRequest{" + "id=" + id + ", requestUsernameID=" + requestUsernameID + ", fullName=" + fullName + ", pictureUrl=" + pictureUrl + '}';
     }
 
 }

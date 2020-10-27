@@ -101,6 +101,14 @@ public class FriendResourceTest {
             em.persist(r2);
 
             em.getTransaction().commit();
+            
+            em.getTransaction().begin();
+            em.persist(u1);
+            em.persist(u2);
+            em.persist(u3);
+            em.persist(u4);
+
+            em.getTransaction().commit();
 
             up1 = new UserPosts("This is a post made by a user");
             up2 = new UserPosts("This is a post made by a admin");
@@ -114,16 +122,9 @@ public class FriendResourceTest {
 //
 //            u1.addToFriendList(f1);
 //            u2.addToFriendList(f2);
-            em.getTransaction().begin();
-            em.persist(u1);
-            em.persist(u2);
-            em.persist(u3);
-            em.persist(u4);
 
-            em.getTransaction().commit();
-
-            fr1 = new FriendRequest(u2.getUserName(), u2.getFullName(), u2.getProfilePicture());
-            fr2 = new FriendRequest(u1.getUserName(), u1.getFullName(), u1.getProfilePicture());
+            fr1 = new FriendRequest(u2.getId(), u2.getFullName(), u2.getProfilePicture());
+            fr2 = new FriendRequest(u1.getId(), u1.getFullName(), u1.getProfilePicture());
 
             u1.addFriendRequest(fr1);
             u3.addFriendRequest(fr2);
@@ -149,13 +150,13 @@ public class FriendResourceTest {
     @Test
     public void successMakeFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.login(u1.getUserName(), u1.getId(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
         obj.put("token", token);
-        obj.put("request_username", u3.getUserName());
+        obj.put("request_username", u2.getId());
 
         String response = with()
                 .contentType("application/json")
@@ -173,13 +174,14 @@ public class FriendResourceTest {
     @Test
     public void failMakeFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.login(u1.getUserName(), u1.getId(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
         obj.put("token", token);
-        obj.put("request_username", "not found");
+        obj.put("request_username", 404);
+        obj.put("usernameID",404);
 
         with()
                 .contentType("application/json")
@@ -194,17 +196,17 @@ public class FriendResourceTest {
     public void successAcceptFriendRequest() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u4.getUserName(), "test");
+        getToken.login(u4.getUserName(), u4.getId(), "test");
         String token = getToken.securityToken;
 
         //assertEquals(0, u4.getFriendList().size());
-        User user = facade.addFriendRequest(u4.getUserName(), u2.getUserName());
+        User user = facade.addFriendRequest(u4.getId(), u2.getId());
 
         assertEquals(1, user.getFriendRequests().size());
 
         //Creating a JSON Object
         JSONObject json = new JSONObject();
-        json.put("request_username", u2.getUserName());
+        json.put("request_usernameID", u2.getId());
         json.put("token", token);
 
         String response = with()
@@ -218,7 +220,7 @@ public class FriendResourceTest {
 
         assertNotNull(response);
         assertEquals("Friend request has been accepted", response);
-        User friendRequestLength = em.find(User.class, u4.getUserName());
+        User friendRequestLength = em.find(User.class, u4.getId());
         assertEquals(0, friendRequestLength.getFriendRequests().size());
         assertEquals(1, friendRequestLength.getFriendList().size());
         em.close();
@@ -227,13 +229,13 @@ public class FriendResourceTest {
     @Test
     public void failAcceptFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.login(u1.getUserName(), u1.getId(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
         obj.put("token", token);
-        obj.put("request_username", "not found");
+        obj.put("request_usernameID", 404);
 
         with()
                 .contentType("application/json")
@@ -247,13 +249,13 @@ public class FriendResourceTest {
     @Test
     public void hardFailAcceptFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.login(u1.getUserName(), u1.getId(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
         obj.put("token", token);
-        obj.put("request_username", u4.getUserName());
+        obj.put("request_usernameID", u4.getId());
 
         with()
                 .contentType("application/json")
@@ -268,16 +270,16 @@ public class FriendResourceTest {
     public void successRemoveFriendRequest() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u4.getUserName(), "test");
+        getToken.login(u4.getUserName(), u4.getId(), "test");
         String token = getToken.securityToken;
 
-        User user = facade.addFriendRequest(u4.getUserName(), u2.getUserName());
+        User user = facade.addFriendRequest(u4.getId(), u2.getId());
 
         assertEquals(1, user.getFriendRequests().size());
 
         //Creating a JSON Object
         JSONObject json = new JSONObject();
-        json.put("request_username", u2.getUserName());
+        json.put("request_username", u2.getId());
         json.put("token", token);
 
         String response = with()
@@ -291,7 +293,7 @@ public class FriendResourceTest {
 
         assertNotNull(response);
         assertEquals("Friend Request has been removed", response);
-        User friendRequestLength = em.find(User.class, u4.getUserName());
+        User friendRequestLength = em.find(User.class, u4.getId());
         assertEquals(0, friendRequestLength.getFriendRequests().size());
         em.close();
     }
@@ -299,13 +301,13 @@ public class FriendResourceTest {
     @Test
     public void failRemoveFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.login(u1.getUserName(),u1.getId(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
         obj.put("token", token);
-        obj.put("request_username", "not found");
+        obj.put("request_username", 404);
 
         with()
                 .contentType("application/json")
@@ -320,7 +322,7 @@ public class FriendResourceTest {
     public void successFriendSearch() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.login(u1.getUserName(), u1.getId(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -345,13 +347,13 @@ public class FriendResourceTest {
     @Test
     public void failFriendSearch() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.login(u1.getUserName(), u1.getId(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
         obj.put("token", token);
-        obj.put("search_name", "not found");
+        obj.put("search_name", 404);
 
         with()
                 .contentType("application/json")

@@ -50,13 +50,15 @@ public class LoginEndpoint {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         String username = json.get("username").getAsString();
         String password = json.get("password").getAsString();
+        int usernameID = json.get("usernameID").getAsInt();
 
         try {
-            User user = USER_FACADE.getVeryfiedUser(username, password);
-            String token = createToken(username, user.getRole());
+            User user = USER_FACADE.getVeryfiedUser(usernameID, password);
+            String token = createToken(username, usernameID, user.getRole());
             JsonObject responseJson = new JsonObject();
             responseJson.addProperty("username", username);
             responseJson.addProperty("token", token);
+            responseJson.addProperty("usernameID", usernameID);
             return Response.ok(new Gson().toJson(responseJson)).build();
 
         } catch (JOSEException | AuthenticationException ex) {
@@ -84,10 +86,10 @@ public class LoginEndpoint {
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
-        String username = userPrin.getName();
+        int usernameID = userPrin.getNameID();
         User user;
         try {
-            user = USER_FACADE.userResetPassword(username, secret, newpassword);
+            user = USER_FACADE.userResetPassword(usernameID, secret, newpassword);
         } catch (AuthenticationException ex) {
             throw new AuthenticationException("Invalid username or password! Please try again");
             //Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
@@ -95,7 +97,7 @@ public class LoginEndpoint {
         return GSON.toJson("Password has been resat for user.");
     }
 
-    private String createToken(String userName, Role role) throws JOSEException {
+    private String createToken(String userName, int userNameID, Role role) throws JOSEException {
 
         String issuer = "semesterstartcode-dat3";
 
@@ -104,7 +106,8 @@ public class LoginEndpoint {
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .subject(userName)
                 .claim("username", userName)
-                .claim("role", role.getRoleName().toString())
+                .claim("role", role.getRoleName())
+                .claim("usernameID", userNameID)
                 .claim("issuer", issuer)
                 .issueTime(date)
                 .expirationTime(new Date(date.getTime() + TOKEN_EXPIRE_TIME))

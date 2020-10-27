@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import entities.Role;
 import entities.User;
+import facades.UserFacade;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.with;
 import io.restassured.parsing.Parser;
@@ -33,6 +34,10 @@ public class RegistrationResourceTest {
     private static HttpServer httpServer;
     private static EntityManagerFactory emf;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    
+    private static User u1, u2;
+    private static Role r1, r2;
+    private static UserFacade facade;
 
     static HttpServer startServer() {
         ResourceConfig rc = ResourceConfig.forApplication(new ApplicationConfig());
@@ -44,12 +49,15 @@ public class RegistrationResourceTest {
         //This method must be called before you request the EntityManagerFactory
         EMF_Creator.startREST_TestWithDB();
         emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.TEST, EMF_Creator.Strategy.DROP_AND_CREATE);
+        facade = UserFacade.getUserFacade(emf);
+        facade.serverStatus = false;
 
         httpServer = startServer();
         //Setup RestAssured
         RestAssured.baseURI = SERVER_URL;
         RestAssured.port = SERVER_PORT;
         RestAssured.defaultParser = Parser.JSON;
+        
 
         //Create 2 dummy users
         EntityManager em = emf.createEntityManager();
@@ -58,11 +66,11 @@ public class RegistrationResourceTest {
             em.createNamedQuery("User.deleteAllRows").executeUpdate();
             em.createNamedQuery("Role.deleteAllRows").executeUpdate();
 
-            User u1 = new User("UserFirstName userLastName","user1", "password", "Very secret user recovery password");
-            User u2 = new User("AdminFirstName AdminLastName", "admin", "password", "Very secret admin recovery password");
+            u1 = new User("UserFirstName userLastName", "user1", "password", "Very secret user recovery password");
+            u2 = new User("AdminFirstName AdminLastName", "admin", "password", "Very secret admin recovery password");
 
-            Role r1 = new Role("user");
-            Role r2 = new Role("admin");
+            r1 = new Role("user");
+            r2 = new Role("admin");
 
             u1.addRole(r1);
             u2.addRole(r2);
@@ -86,16 +94,15 @@ public class RegistrationResourceTest {
         EMF_Creator.endREST_TestWithDB();
         httpServer.shutdownNow();
     }
-    
+
     @Test
     public void testUsernameAlreadyExists2() {
         JSONObject obj = new JSONObject();
         obj.put("fullname", "full name");
-        obj.put("username", "user1");
+        obj.put("username", u1.getUserName());
         obj.put("password", "password");
         obj.put("secretanswer", "secretanswer");
-        
-        
+
         with().body(obj) //include object in body
                 .contentType("application/json")
                 .when().request("POST", "/register/user").then() //post REQUEST

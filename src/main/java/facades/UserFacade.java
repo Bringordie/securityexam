@@ -64,11 +64,11 @@ public class UserFacade {
      * @return User The verified user.
      * @throws AuthenticationException
      */
-    public User getVeryfiedUser(String username, String password) throws AuthenticationException {
+    public User getVeryfiedUser(int usernameID, String password) throws AuthenticationException {
         EntityManager em = emf.createEntityManager();
         User user;
         try {
-            user = em.find(User.class, username);
+            user = em.find(User.class, usernameID);
             if (user == null || !user.verifyPassword(password)) {
                 throw new AuthenticationException("Invalid user name or password");
             }
@@ -78,11 +78,11 @@ public class UserFacade {
         return user;
     }
 
-    public User userResetPassword(String username, String secret, String newPassword) throws AuthenticationException {
+    public User userResetPassword(int usernameID, String secret, String newPassword) throws AuthenticationException {
         EntityManager em = emf.createEntityManager();
         User user;
         try {
-            user = em.find(User.class, username);
+            user = em.find(User.class, usernameID);
             Boolean verifySecretPassword = user.verifySecretAnswer(secret);
             if (user == null || !verifySecretPassword) {
                 throw new AuthenticationException("Invalid user name or secret");
@@ -99,14 +99,25 @@ public class UserFacade {
         return user;
     }
 
-    public User createNormalUser(String fullName, String userName, String userPass, String secretAnswer, String profilePicture) throws AlreadyExistsException {
+    public User createNormalUser(String fullName, String userName, String userPass, String secretAnswer, String profilePicture) throws AlreadyExistsException, SQLException, ClassNotFoundException {
         EntityManager em = emf.createEntityManager();
         User userregister = new User(fullName, userName, userPass, secretAnswer, profilePicture);
+        User checker = new User();
         Role userRole = new Role("user");
         userregister.addRole(userRole);
+        String query = "SELECT user_name FROM users WHERE user_name = ?";
         try {
-            User user = em.find(User.class, userName);
-            if (user != null) {
+            PreparedStatement ps = createConnection().prepareStatement(query);
+            ps.setString(1, userName);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                UserDTO dto = new UserDTO();
+                checker.setUserName(rs.getString("user_name"));
+            }
+            rs.close();
+            ps.close();
+            //User user = em.find(User.class, userName);
+            if (checker != null) {
                 throw new AlreadyExistsException("User name already exists");
             }
             em.getTransaction().begin();
@@ -118,6 +129,7 @@ public class UserFacade {
         return userregister;
     }
 
+    //WILL NOT WORK YET
     public User adminCreateUser(String fullName, String userName, String userPass, String secretAnswer, String profilePicture) throws AlreadyExistsException {
         EntityManager em = emf.createEntityManager();
         User userregister = new User(fullName, userName, userPass, secretAnswer, profilePicture);
@@ -159,13 +171,13 @@ public class UserFacade {
         return user;
     }
 
-    public boolean createPost(String username, String userPost) {
+    public boolean createPost(int usernameID, String userPost) {
         EntityManager em = emf.createEntityManager();
         User user;
         UserPosts post = new UserPosts(userPost);
         try {
             em.getTransaction().begin();
-            user = em.find(User.class, username);
+            user = em.find(User.class, usernameID);
             if (user == null) {
                 return false;
             }
@@ -178,13 +190,13 @@ public class UserFacade {
         return true;
     }
 
-    public List<UserPosts> getPosts(String username) throws NotFoundException {
+    public List<UserPosts> getPosts(int usernameID) throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         User user;
         List<UserPosts> post = new ArrayList();
         try {
             em.getTransaction().begin();
-            user = em.find(User.class, username);
+            user = em.find(User.class, usernameID);
             post = user.getUserPosts();
         } catch (NullPointerException ex) {
             throw new NotFoundException("User name could not be found");
@@ -194,17 +206,17 @@ public class UserFacade {
         return post;
     }
 
-    public User addFriendRequest(String requestReceiverUsername, String requestMadeByUsername) throws NotFoundException {
+    public User addFriendRequest(int requestReceiverUsernameID, int requestMadeByUsernameID) throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         User user, requester;
         try {
             em.getTransaction().begin();
-            user = em.find(User.class, requestReceiverUsername);
-            requester = em.find(User.class, requestMadeByUsername);
+            user = em.find(User.class, requestReceiverUsernameID);
+            requester = em.find(User.class, requestMadeByUsernameID);
             if (user == null || requester == null) {
                 throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
             }
-            FriendRequest friendReq = new FriendRequest(requester.getUserName(), requester.getFullName(), requester.getProfilePicture());
+            FriendRequest friendReq = new FriendRequest(requester.getId(), requester.getFullName(), requester.getProfilePicture());
             user.addFriendRequest(friendReq);
             em.persist(user);
             em.getTransaction().commit();
@@ -216,29 +228,29 @@ public class UserFacade {
         return user;
     }
 
-    public User acceptFriendRequest(String username, String request_username) throws NotFoundException, AuthenticationException {
+    public User acceptFriendRequest(int usernameID, int request_usernameID) throws NotFoundException, AuthenticationException {
         EntityManager em = emf.createEntityManager();
         User user;
         User requester;
         try {
-            user = em.find(User.class, username);
-            requester = em.find(User.class, request_username);
+            user = em.find(User.class, usernameID);
+            requester = em.find(User.class, request_usernameID);
             if (user == null || requester == null) {
                 throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
             }
             //Validating that there is actually a request and that a layer wasn't circumvented security.
-            Boolean validation = user.validateSpecificFriendRequest(request_username);
+            Boolean validation = user.validateSpecificFriendRequest(requester.getId());
             if (validation == false) {
                 throw new AuthenticationException("Something unexpected went wrong, this could have been a try to circumvent the security.");
             }
             //Making the friend connection
-            Friends friendRequester = new Friends(request_username);
-            Friends friendReceiver = new Friends(username);
+            Friends friendRequester = new Friends(requester.getId());
+            Friends friendReceiver = new Friends(user.getId());
             //Adding to each others friend list.
             user.addToFriendList(friendRequester);
             requester.addToFriendList(friendReceiver);
             //Removing friend reuqest
-            user.deleteSpecificFriendRequest(requester.getUserName());
+            user.deleteSpecificFriendRequest(requester.getId());
             //Persisting
             em.getTransaction().begin();
             em.persist(user);
@@ -252,18 +264,18 @@ public class UserFacade {
         return user;
     }
 
-    public User removeFriend(String userRequester, String userFriend) throws NotFoundException {
+    public User removeFriend(int userRequesterID, int userFriendID) throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         User user, requester;
         try {
             em.getTransaction().begin();
-            user = em.find(User.class, userRequester);
-            requester = em.find(User.class, userFriend);
+            user = em.find(User.class, userRequesterID);
+            requester = em.find(User.class, userFriendID);
             if (user == null || requester == null) {
                 throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
             }
-            Boolean userBol = user.removeFriend(requester.getUserName());
-            Boolean requestBol = requester.removeFriend(user.getUserName());
+            Boolean userBol = user.removeFriend(requester.getId());
+            Boolean requestBol = requester.removeFriend(user.getId());
             if (!userBol == false && !requestBol == false) {
                 em.persist(user);
                 em.persist(requester);
@@ -277,16 +289,16 @@ public class UserFacade {
         return user;
     }
 
-    public User removeFriendRequest(String userRequester, String userMadeRequest) throws NotFoundException {
+    public User removeFriendRequest(int userRequesterID, int userMadeRequestID) throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         User user;
         try {
             em.getTransaction().begin();
-            user = em.find(User.class, userRequester);
+            user = em.find(User.class, userRequesterID);
             if (user == null) {
                 throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
             }
-            Boolean userBol = user.deleteSpecificFriendRequest(userMadeRequest);
+            Boolean userBol = user.deleteSpecificFriendRequest(userMadeRequestID);
             if (!userBol == false) {
                 em.persist(user);
                 em.getTransaction().commit();
@@ -320,7 +332,7 @@ public class UserFacade {
             if (userDTOList.isEmpty()){
                 throw new NotFoundException("No results by this name was found");
             }
-        } catch (NullPointerException ex) {
+        } catch (NullPointerException | NotFoundException ex) {
             throw new NotFoundException("No results by this name was found");
         } 
         return userDTOList;

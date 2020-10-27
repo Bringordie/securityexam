@@ -100,19 +100,7 @@ public class LoginEndpointTest {
             em.persist(r2);
 
             em.getTransaction().commit();
-
-            up1 = new UserPosts("This is a post made by a user");
-            up2 = new UserPosts("This is a post made by a admin");
-
-            u1.addUserPost(up1);
-            u4.addUserPost(up2);
-
-            f1 = new Friends(u4.getUserName());
-            f2 = new Friends(u1.getUserName());
-
-            u1.addToFriendList(f1);
-            u2.addToFriendList(f2);
-
+            
             em.getTransaction().begin();
             em.persist(u1);
             em.persist(u2);
@@ -121,8 +109,21 @@ public class LoginEndpointTest {
 
             em.getTransaction().commit();
 
-            fr1 = new FriendRequest(u2.getUserName(), u2.getFullName(), u2.getProfilePicture());
-            fr2 = new FriendRequest(u1.getUserName(), u1.getFullName(), u1.getProfilePicture());
+            up1 = new UserPosts("This is a post made by a user");
+            up2 = new UserPosts("This is a post made by a admin");
+
+            u1.addUserPost(up1);
+            u4.addUserPost(up2);
+
+            // Out commented these as it's easier to have an overview of the friend tests.
+//            f1 = new Friends(u4.getUserName());
+//            f2 = new Friends(u1.getUserName());
+//
+//            u1.addToFriendList(f1);
+//            u2.addToFriendList(f2);
+
+            fr1 = new FriendRequest(u2.getId(), u2.getFullName(), u2.getProfilePicture());
+            fr2 = new FriendRequest(u1.getId(), u1.getFullName(), u1.getProfilePicture());
 
             u1.addFriendRequest(fr1);
             u3.addFriendRequest(fr2);
@@ -140,10 +141,11 @@ public class LoginEndpointTest {
     public static String securityToken;
 
     //Utility method to login and set the returned securityToken
-    public static void login(String username, String password) {
+    public static void login(String username, int usernameID, String password) {
         JSONObject json = new JSONObject();
         json.put("username", username);
         json.put("password", password);
+        json.put("usernameID", usernameID);
         securityToken = given()
                 .contentType("application/json")
                 .body(json)
@@ -163,6 +165,7 @@ public class LoginEndpointTest {
         JSONObject obj = new JSONObject();
         obj.put("username", "user123");
         obj.put("password", "password");
+        obj.put("usernameID", 404);
 
         given().contentType("application/json")
                 .body(obj).when().post("/login")
@@ -173,8 +176,9 @@ public class LoginEndpointTest {
     public void successfullLoginTest() {
         System.out.println("Testing is server UP");
         JSONObject obj = new JSONObject();
-        obj.put("username", "user");
+        obj.put("username", u1.getUserName());
         obj.put("password", "test");
+        obj.put("usernameID", u1.getId());
 
         given().contentType("application/json")
                 .body(obj).when().post("/login")
@@ -183,14 +187,14 @@ public class LoginEndpointTest {
 
     @Test
     public void testLoginFunctionTest() {
-        login("user", "test");
+        login(u1.getUserName(), u1.getId(), "test");
         assertNotNull(securityToken != null);
         System.out.println("The token is NOT NULL and it is: " + securityToken);
     }
 
     @Test
     public void resetPasswordPass() {
-        login(u1.getUserName(), "test");
+        login(u1.getUserName(), u1.getId(), "test");
         
         JSONObject obj = new JSONObject();
         obj.put("token", securityToken);

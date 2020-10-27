@@ -60,7 +60,7 @@ public class PostResource {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
 
-        String username = userPrin.getName();
+        int username = userPrin.getNameID();
         List<UserPosts> response;
         response = FACADE.getPosts(username);
         if (response.isEmpty()) {
@@ -85,7 +85,7 @@ public class PostResource {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
 
-        String username = userPrin.getName();
+        int username = userPrin.getNameID();
         String newPost = json.get("post").getAsString();
 
         Boolean response = FACADE.createPost(username, newPost);

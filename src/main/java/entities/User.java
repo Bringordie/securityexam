@@ -7,6 +7,8 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -18,6 +20,10 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import org.mindrot.jbcrypt.BCrypt;
 
+/**
+ *
+ * @author Frederik
+ */
 @Entity
 @NamedQuery(name = "User.deleteAllRows", query = "DELETE from User")
 @Table(name = "users")
@@ -25,6 +31,10 @@ public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private int id;
+    //@Id
     @Basic(optional = false)
     @NotNull
     @Column(name = "user_name", length = 25)
@@ -37,7 +47,7 @@ public class User implements Serializable {
     @Column(name = "full_name")
     private String fullName;
     @JoinTable(name = "user_roles", joinColumns = {
-        @JoinColumn(name = "user_name", referencedColumnName = "user_name")}, inverseJoinColumns = {
+        @JoinColumn(name = "user_id", referencedColumnName = "user_id")}, inverseJoinColumns = {
         @JoinColumn(name = "role_name", referencedColumnName = "role_name")})
     @ManyToOne
     private Role role;
@@ -45,22 +55,22 @@ public class User implements Serializable {
     // https://www.callicoder.com/distributed-unique-id-sequence-number-generator/
     @Column(name = "profile_picture")
     private String profilePicture;
-    @JoinTable(name = "user_friends", joinColumns = {
-        @JoinColumn(name = "user_name", referencedColumnName = "user_name")}, inverseJoinColumns = {
-        @JoinColumn(name = "user_friend", referencedColumnName = "user_friend")})
+//    @JoinTable(name = "user_friends", joinColumns = {
+//        @JoinColumn(name = "user_id", referencedColumnName = "user_id")}, inverseJoinColumns = {
+//        @JoinColumn(name = "user_friend", referencedColumnName = "user_friend")})
     @ManyToMany(cascade = {CascadeType.PERSIST})
     private List<Friends> friendList = new ArrayList();
-    @JoinTable(name = "user_posts", joinColumns = {
-        @JoinColumn(name = "user_name", referencedColumnName = "user_name")}, inverseJoinColumns = {
-        @JoinColumn(name = "user_post", referencedColumnName = "user_post"),
-        @JoinColumn(name = "post_date", referencedColumnName = "post_date")})
+//    @JoinTable(name = "user_posts", joinColumns = {
+//        @JoinColumn(name = "user_id", referencedColumnName = "user_id")}, inverseJoinColumns = {
+//        @JoinColumn(name = "user_post", referencedColumnName = "user_post"),
+//        @JoinColumn(name = "post_date", referencedColumnName = "post_date")})
     @ManyToMany(cascade = {CascadeType.PERSIST})
     private List<UserPosts> userPosts = new ArrayList();
-    @JoinTable(name = "user_friend_requests", joinColumns = {
-        @JoinColumn(name = "user_name", referencedColumnName = "user_name")}, inverseJoinColumns = {
-        @JoinColumn(name = "requested_friend", referencedColumnName = "requested_friend"),
-        @JoinColumn(name = "full_name", referencedColumnName = "full_name")})/*, 
-        @JoinColumn(name = "picture_url", referencedColumnName = "picture_url")})*/
+//    @JoinTable(name = "user_friend_requests", joinColumns = {
+//        @JoinColumn(name = "user_id", referencedColumnName = "user_id")}, inverseJoinColumns = {
+//        @JoinColumn(name = "requested_friend", referencedColumnName = "requested_friend"),
+//        @JoinColumn(name = "full_name", referencedColumnName = "full_name")})/*, 
+//        @JoinColumn(name = "picture_url", referencedColumnName = "picture_url")})*/
     @ManyToMany(cascade = {CascadeType.PERSIST})
     private List<FriendRequest> friendRequests = new ArrayList();
     @Column(name = "secret_password")
@@ -69,6 +79,10 @@ public class User implements Serializable {
     public User() {
     }
 
+    public int getId() {
+        return id;
+    }
+    
     public User(String fullName, String userName, String userPass, String secretAnswer, String profilePicture) {
         this.fullName = fullName;
         this.userName = userName;
@@ -170,10 +184,10 @@ public class User implements Serializable {
         return friendRequests;
     }
     
-    public Boolean deleteSpecificFriendRequest(String requestUserName) {
+    public Boolean deleteSpecificFriendRequest(int requestUserNameID) {
         Boolean response = false;
         for (FriendRequest friendRequest : friendRequests) {
-        if (friendRequest.getRequestUsername().equals(requestUserName)) {
+        if (friendRequest.getRequestUsername() == requestUserNameID) {
             friendRequests.remove(friendRequest);
             response = true;
             break;
@@ -182,10 +196,10 @@ public class User implements Serializable {
         return response;
     }
     
-    public Boolean removeFriend(String requestUserName) {
+    public Boolean removeFriend(int requestUserNameID) {
         Boolean response = false;
         for (Friends friendRemove : friendList) {
-        if (friendRemove.getFriendUsername().equals(requestUserName)) {
+        if (friendRemove.getFriendUsernameID() == requestUserNameID) {
             friendList.remove(friendRemove);
             response = true;
             break;
@@ -194,10 +208,10 @@ public class User implements Serializable {
         return response;
     }
     
-    public Boolean validateSpecificFriendRequest(String requestUserName) {
+    public Boolean validateSpecificFriendRequest(int requestUserNameID) {
         Boolean response = false;
         for (FriendRequest friendRequest : friendRequests) {
-        if (friendRequest.getRequestUsername().equals(requestUserName)) {
+        if (friendRequest.getRequestUsername() == requestUserNameID) {
             response = true;
             break;
         }

@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import entities.User;
 import errorhandling.AlreadyExistsException;
 import facades.UserFacade;
+import java.sql.SQLException;
 import java.util.UUID;
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
@@ -42,18 +43,21 @@ public class RegistrationResource {
     @Path("/user")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String createUser(String jsonString) {
+    public String createUser(String jsonString) throws SQLException, ClassNotFoundException {
         String profilePicture = UUID.randomUUID().toString();
         // ## TO DO ADD/RENAME THE PICTURE ALSO
+        // ## ALSO REMEMBER TO GIVE A TOKEN? OR LET THEM LOGIN AGAIN
         
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         String fullName = json.get("fullname").getAsString();
         String userName = json.get("username").getAsString();
         String userPass = json.get("password").getAsString();
         String secretAnswer = json.get("secretanswer").getAsString();
+
         
         try {
-            return GSON.toJson(FACADE.createNormalUser(fullName, userName, userPass, secretAnswer, profilePicture));
+            User user = FACADE.createNormalUser(fullName, userName, userPass, secretAnswer, profilePicture);
+            return GSON.toJson(user);
         } catch (AlreadyExistsException ex) {
             throw new WebApplicationException(ex.getMessage(), 400);
         }
