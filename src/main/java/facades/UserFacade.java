@@ -64,11 +64,20 @@ public class UserFacade {
      * @return User The verified user.
      * @throws AuthenticationException
      */
-    public User getVeryfiedUser(int usernameID, String password) throws AuthenticationException {
+    public User getVeryfiedUser(String username, String password) throws AuthenticationException, SQLException, ClassNotFoundException {
         EntityManager em = emf.createEntityManager();
-        User user;
+        User user = new User();
+        String query = "SELECT * FROM users WHERE user_name = ?";
         try {
-            user = em.find(User.class, usernameID);
+            PreparedStatement ps = createConnection().prepareStatement(query);
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                user.setId(rs.getInt("user_id"));
+            }
+            rs.close();
+            ps.close();
+            user = em.find(User.class, user.getId());
             if (user == null || !user.verifyPassword(password)) {
                 throw new AuthenticationException("Invalid user name or password");
             }

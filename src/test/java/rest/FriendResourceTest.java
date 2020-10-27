@@ -150,7 +150,7 @@ public class FriendResourceTest {
     @Test
     public void successMakeFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), u1.getId(), "test");
+        getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -174,7 +174,7 @@ public class FriendResourceTest {
     @Test
     public void failMakeFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), u1.getId(), "test");
+        getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -196,7 +196,7 @@ public class FriendResourceTest {
     public void successAcceptFriendRequest() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u4.getUserName(), u4.getId(), "test");
+        getToken.login(u4.getUserName(), "test");
         String token = getToken.securityToken;
 
         //assertEquals(0, u4.getFriendList().size());
@@ -229,7 +229,7 @@ public class FriendResourceTest {
     @Test
     public void failAcceptFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), u1.getId(), "test");
+        getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -249,7 +249,7 @@ public class FriendResourceTest {
     @Test
     public void hardFailAcceptFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), u1.getId(), "test");
+        getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -270,7 +270,7 @@ public class FriendResourceTest {
     public void successRemoveFriendRequest() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u4.getUserName(), u4.getId(), "test");
+        getToken.login(u4.getUserName(), "test");
         String token = getToken.securityToken;
 
         User user = facade.addFriendRequest(u4.getId(), u2.getId());
@@ -301,7 +301,7 @@ public class FriendResourceTest {
     @Test
     public void failRemoveFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(),u1.getId(), "test");
+        getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -322,7 +322,7 @@ public class FriendResourceTest {
     public void successFriendSearch() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), u1.getId(), "test");
+        getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -347,7 +347,7 @@ public class FriendResourceTest {
     @Test
     public void failFriendSearch() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), u1.getId(), "test");
+        getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object

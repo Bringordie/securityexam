@@ -29,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import errorhandling.AuthenticationException;
 import errorhandling.GenericExceptionMapper;
+import java.sql.SQLException;
 import java.text.ParseException;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.PUT;
@@ -46,14 +47,15 @@ public class LoginEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response login(String jsonString) throws AuthenticationException {
+    public Response login(String jsonString) throws AuthenticationException, SQLException, ClassNotFoundException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         String username = json.get("username").getAsString();
         String password = json.get("password").getAsString();
-        int usernameID = json.get("usernameID").getAsInt();
+        int usernameID;
 
         try {
-            User user = USER_FACADE.getVeryfiedUser(usernameID, password);
+            User user = USER_FACADE.getVeryfiedUser(username, password);
+            usernameID = user.getId();
             String token = createToken(username, usernameID, user.getRole());
             JsonObject responseJson = new JsonObject();
             responseJson.addProperty("username", username);

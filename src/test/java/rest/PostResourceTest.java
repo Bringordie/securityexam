@@ -146,7 +146,7 @@ public class PostResourceTest {
     public void successfullCreatePostTest() {
 
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(),u1.getId(), "test");
+        getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -202,7 +202,7 @@ public class PostResourceTest {
     @Ignore
     public void testtest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), u1.getId(), "test");
+        getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
@@ -212,7 +212,7 @@ public class PostResourceTest {
         String response = with()
                 .contentType("application/json")
                 .body(obj)
-                .when().request("GET", "/post").then() //post REQUEST
+                .when().request("GET", "/post/own").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.OK_200.getStatusCode())
                 .extract()
@@ -226,7 +226,7 @@ public class PostResourceTest {
     @Ignore
     public void successGetPostTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), u1.getId(), "test");
+        getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -237,7 +237,7 @@ public class PostResourceTest {
                 = with()
                         .contentType("application/json")
                         .body(obj)
-                        .when().request("GET", "/post").then() //post REQUEST
+                        .when().request("GET", "/post/own").then() //post REQUEST
                         .assertThat()
                         .statusCode(HttpStatus.OK_200.getStatusCode())
                         .extract()
@@ -251,7 +251,7 @@ public class PostResourceTest {
     @Ignore
     public void failGetPostTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u2.getUserName(), u2.getId(), "test");
+        getToken.login(u2.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -261,7 +261,7 @@ public class PostResourceTest {
         given() //include object in body
                 .contentType("application/json")
                 .body(obj)
-                .when().get("post").then() //get REQUEST
+                .when().get("post/own").then() //get REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
     }

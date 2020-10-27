@@ -46,7 +46,7 @@ public class PostResource {
     SecurityContext securityContext;
 
     @GET
-    @Path("/")
+    @Path("/own")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String getPosts(String jsonString) throws ParseException, JOSEException, AuthenticationException, NotFoundException {

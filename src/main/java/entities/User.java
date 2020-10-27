@@ -82,6 +82,10 @@ public class User implements Serializable {
     public int getId() {
         return id;
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
     
     public User(String fullName, String userName, String userPass, String secretAnswer, String profilePicture) {
         this.fullName = fullName;
