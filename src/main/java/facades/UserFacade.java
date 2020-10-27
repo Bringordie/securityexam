@@ -1,5 +1,6 @@
 package facades;
 
+import dtos.user.UserDTO;
 import entities.FriendRequest;
 import entities.Friends;
 import entities.Role;
@@ -10,16 +11,35 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import errorhandling.AuthenticationException;
 import errorhandling.NotFoundException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import utils.EMF_Creator;
+import utils.EMF_Creator.DbSelector;
 
 public class UserFacade {
 
     private static EntityManagerFactory emf;
     private static UserFacade instance;
 
+    public static Boolean serverStatus = true;
+    private static Connection connection;
+
     private UserFacade() {
+    }
+
+    public static Connection createConnection() throws SQLException, ClassNotFoundException {
+        DbSelector connectionStatus;
+        if (serverStatus == true) {
+            connectionStatus = EMF_Creator.DbSelector.DEV;
+        } else {
+            connectionStatus = EMF_Creator.DbSelector.TEST;
+        }
+        connection = EMF_Creator.getConnection(connectionStatus, EMF_Creator.Strategy.CREATE);
+        return connection;
     }
 
     /**
@@ -231,7 +251,7 @@ public class UserFacade {
         }
         return user;
     }
-    
+
     public User removeFriend(String userRequester, String userFriend) throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         User user, requester;
@@ -244,10 +264,10 @@ public class UserFacade {
             }
             Boolean userBol = user.removeFriend(requester.getUserName());
             Boolean requestBol = requester.removeFriend(user.getUserName());
-            if (!userBol == false && !requestBol == false){
-            em.persist(user);
-            em.persist(requester);
-            em.getTransaction().commit();
+            if (!userBol == false && !requestBol == false) {
+                em.persist(user);
+                em.persist(requester);
+                em.getTransaction().commit();
             }
         } catch (NullPointerException ex) {
             throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
@@ -256,7 +276,7 @@ public class UserFacade {
         }
         return user;
     }
-    
+
     public User removeFriendRequest(String userRequester, String userMadeRequest) throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         User user;
@@ -267,9 +287,9 @@ public class UserFacade {
                 throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
             }
             Boolean userBol = user.deleteSpecificFriendRequest(userMadeRequest);
-            if (!userBol == false){
-            em.persist(user);
-            em.getTransaction().commit();
+            if (!userBol == false) {
+                em.persist(user);
+                em.getTransaction().commit();
             } else {
                 throw new NotFoundException("No friend request found.");
             }
@@ -281,5 +301,35 @@ public class UserFacade {
         return user;
     }
 
+    public List<UserDTO> friendSearch(String name) throws NotFoundException, SQLException, ClassNotFoundException {
+        List<UserDTO> userDTOList = new ArrayList();
+        String query = "SELECT full_name, profile_picture FROM users WHERE full_name LIKE ?";
+        try {
+            PreparedStatement ps = createConnection().prepareStatement(query);
+            ps.setString(1, "%" + name + "%");
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                UserDTO dto = new UserDTO();
+                dto.setFullName(rs.getString("full_name"));
+                dto.setProfilePicture(rs.getString("profile_picture"));
+                userDTOList.add(dto);
+            }
+            rs.close();
+            ps.close();
+            if (userDTOList.isEmpty()){
+                throw new NotFoundException("No results by this name was found");
+            }
+        } catch (NullPointerException ex) {
+            throw new NotFoundException("No results by this name was found");
+        } 
+        return userDTOList;
+    }
+    
+    public static void main(String[] args) throws NotFoundException, SQLException, ClassNotFoundException {
+        UserFacade test = new UserFacade();
+        List<UserDTO> result = test.friendSearch("u");
+        System.out.println(result);
+    }
 
 }

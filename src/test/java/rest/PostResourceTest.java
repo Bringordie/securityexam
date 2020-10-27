@@ -194,6 +194,29 @@ public class PostResourceTest {
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode());
     }
     
+    //Another try of seeing what could be wrong below.
+    @Ignore
+    public void testtest() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u1.getUserName(), "test");
+        String token = getToken.securityToken;
+        //Creating a JSON Object
+        JSONObject obj = new JSONObject();
+        obj.put("token", token);
+
+
+        String response = with()
+                .contentType("application/json")
+                .body(obj)
+                .when().request("GET", "/post").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .extract()
+                .as(String.class); //extract result JSON as object
+        
+        assertNotNull(response);
+    }
+    
 
     //Manuel tested but unsure why this test fails.
     @Ignore

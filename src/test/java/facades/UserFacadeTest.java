@@ -1,5 +1,6 @@
 package facades;
 
+import dtos.user.UserDTO;
 import entities.FriendRequest;
 import entities.Friends;
 import entities.Role;
@@ -7,6 +8,7 @@ import entities.User;
 import entities.UserPosts;
 import errorhandling.AuthenticationException;
 import errorhandling.NotFoundException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +44,7 @@ public class UserFacadeTest {
     public static void setUpClass() {
         emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.TEST, EMF_Creator.Strategy.DROP_AND_CREATE);
         facade = UserFacade.getUserFacade(emf);
+        facade.serverStatus = false;
     }
 
     @AfterAll
@@ -325,6 +328,36 @@ public class UserFacadeTest {
             fail("Invalid user name");
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "No friend request found.";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
+    
+    /**
+     * Test of friendSearch method, of class UserFacade success.
+     */
+    @Test
+    public void findFriendPass() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
+        List<UserDTO> response = new ArrayList();
+        try {
+            response = facade.friendSearch("admin");
+        } catch (NullPointerException | NotFoundException ex) {
+            throw new NotFoundException("No results by this name was found");
+        }
+        
+        assertNotNull(response);
+        assertEquals(u4.getFullName(), response.get(0).getFullName());
+    }
+
+    /**
+     * Test of friendSearch method, of class UserFacade fail.
+     */
+    @Test
+    public void findFriendFail() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
+        try {
+            List<UserDTO> response = facade.friendSearch("Doesn't exist");
+            fail("Invalid user name");
+        } catch (NullPointerException | NotFoundException ex) {
+            final String msg = "No results by this name was found";
             assertEquals(msg, ex.getMessage());
         }
     }

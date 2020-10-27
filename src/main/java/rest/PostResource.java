@@ -46,8 +46,9 @@ public class PostResource {
     SecurityContext securityContext;
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public String getPosts(String jsonString) throws ParseException, JOSEException, AuthenticationException, NotFoundException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();

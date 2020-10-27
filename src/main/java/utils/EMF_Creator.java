@@ -1,10 +1,15 @@
 package utils;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 public class EMF_Creator {
+    private static Connection conn = null;
 
     public enum Strategy {
         NONE {
@@ -87,6 +92,43 @@ public class EMF_Creator {
         }
         return createEntityManagerFactory(puName,connection_str,user,pw,strategy);
     }
+    
+    /**
+     * Create an Connection using values set in 'config.properties'
+     * <p>
+     * Important: If used from a REST-test call this method before you start the test server
+     * </p>
+     * @param dbType 
+     * @param strategy 
+     * @return The new EntityManagerFactory
+     */
+    public static Connection getConnection(DbSelector dbType,Strategy strategy) throws SQLException, ClassNotFoundException{
+        final String DRIVER = "com.mysql.cj.jdbc.Driver";
+        String puName="pu"; //Only legal name
+        String connection_str;
+        String user;
+        String pw;
+        Class.forName(DRIVER);
+        if(dbType == DbSelector.DEV){
+            connection_str = Settings.getDEV_DBConnection();
+            user = Settings.getPropertyValue("db.user");
+            pw = Settings.getPropertyValue("db.password");
+            System.clearProperty("IS_TEST");
+        } else{          
+            connection_str = Settings.getTEST_DBConnection();
+            //Will ensure REST code "switches" to this DB, even when running on a separate JVM
+            System.setProperty("IS_TEST", connection_str);
+            user = Settings.getPropertyValue("dbtest.user")!= null ? Settings.getPropertyValue("dbtest.user") : Settings.getPropertyValue("db.user") ;
+            pw = Settings.getPropertyValue("dbtest.password")!= null ? Settings.getPropertyValue("dbtest.password") : Settings.getPropertyValue("db.password") ;
+        }
+        try{
+        conn = DriverManager.getConnection(connection_str + "?serverTimezone=UTC", user, pw);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return conn;
+    }
+    
     /**
      * Create an EntityManagerFactory using the supplied values
      * @param puName
