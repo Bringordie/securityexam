@@ -188,7 +188,7 @@ public class FriendResourceTest {
 
     }
 
-    @Ignore
+    @Test
     public void successAcceptFriendRequest() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         LoginEndpointTest getToken = new LoginEndpointTest();
@@ -203,7 +203,7 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject json = new JSONObject();
-        json.put("request_username", u2.getFullName());
+        json.put("request_username", u2.getUserName());
         json.put("token", token);
 
         String response = with()
@@ -260,6 +260,59 @@ public class FriendResourceTest {
                 .when().request("POST", "/friend/accept").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.BAD_REQUEST_400.getStatusCode());
+
+    }
+    
+    @Test
+    public void successRemoveFriendRequest() throws NotFoundException {
+        EntityManager em = emf.createEntityManager();
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u4.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        User user = facade.addFriendRequest(u4.getUserName(), u2.getUserName());
+
+        //User findu4 = em.find(User.class, u4.getUserName());
+        assertEquals(1, user.getFriendRequests().size());
+
+        //Creating a JSON Object
+        JSONObject json = new JSONObject();
+        json.put("request_username", u2.getUserName());
+        json.put("token", token);
+
+        String response = with()
+                .contentType("application/json")
+                .body(json)
+                .when().request("POST", "/friend/remove/friendrequest").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .extract()
+                .as(String.class); //extract result JSON as object
+
+        assertNotNull(response);
+        assertEquals("Friend Request has been removed", response);
+        User friendRequestLength = em.find(User.class, u4.getUserName());
+        assertEquals(0, friendRequestLength.getFriendRequests().size());
+        em.close();
+    }
+
+    @Test
+    public void failRemoveFriendRequest() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u1.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        //Creating a JSON Object
+        JSONObject obj = new JSONObject();
+        obj.put("token", token);
+        obj.put("request_username", "not found");
+
+        with()
+                .contentType("application/json")
+                .body(obj)
+                .when().request("POST", "/friend/remove/friendrequest").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
 
     }
 

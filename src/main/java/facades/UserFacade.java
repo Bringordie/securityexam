@@ -206,7 +206,7 @@ public class UserFacade {
             if (user == null || requester == null) {
                 throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
             }
-            //Validating that there is actaully a request and that a layer wasn't circumvented security.
+            //Validating that there is actually a request and that a layer wasn't circumvented security.
             Boolean validation = user.validateSpecificFriendRequest(request_username);
             if (validation == false) {
                 throw new AuthenticationException("Something unexpected went wrong, this could have been a try to circumvent the security.");
@@ -224,6 +224,55 @@ public class UserFacade {
             em.persist(user);
             em.persist(requester);
             em.getTransaction().commit();
+        } catch (NullPointerException ex) {
+            throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
+        } finally {
+            em.close();
+        }
+        return user;
+    }
+    
+    public User removeFriend(String userRequester, String userFriend) throws NotFoundException {
+        EntityManager em = emf.createEntityManager();
+        User user, requester;
+        try {
+            em.getTransaction().begin();
+            user = em.find(User.class, userRequester);
+            requester = em.find(User.class, userFriend);
+            if (user == null || requester == null) {
+                throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
+            }
+            Boolean userBol = user.removeFriend(requester.getUserName());
+            Boolean requestBol = requester.removeFriend(user.getUserName());
+            if (!userBol == false && !requestBol == false){
+            em.persist(user);
+            em.persist(requester);
+            em.getTransaction().commit();
+            }
+        } catch (NullPointerException ex) {
+            throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
+        } finally {
+            em.close();
+        }
+        return user;
+    }
+    
+    public User removeFriendRequest(String userRequester, String userMadeRequest) throws NotFoundException {
+        EntityManager em = emf.createEntityManager();
+        User user;
+        try {
+            em.getTransaction().begin();
+            user = em.find(User.class, userRequester);
+            if (user == null) {
+                throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
+            }
+            Boolean userBol = user.deleteSpecificFriendRequest(userMadeRequest);
+            if (!userBol == false){
+            em.persist(user);
+            em.getTransaction().commit();
+            } else {
+                throw new NotFoundException("No friend request found.");
+            }
         } catch (NullPointerException ex) {
             throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
         } finally {

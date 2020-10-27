@@ -97,5 +97,59 @@ public class FriendResource {
         
         return GSON.toJson("Friend request has been accepted");
     }
+    
+    @POST
+    @Path("/remove")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String removeFriend(String jsonString) throws NotFoundException, ParseException {
+        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+        JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
+        String token = json.get("token").getAsString();
+        UserPrincipal userPrin;
+        try {
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+        } catch (JOSEException | AuthenticationException ex) {
+            throw new WebApplicationException(ex.getMessage(), 401);
+        }
+        
+        String username = userPrin.getName();
+        String request_username = json.get("request_username").getAsString();
+        User user;
+        try {
+            user = FACADE.removeFriend(username, request_username);
+        } catch (NotFoundException ex) {
+            throw new WebApplicationException("The requested friend could not be found", 404);
+        } 
+        
+        return GSON.toJson("Friend has been removed");
+    }
+    
+    @POST
+    @Path("/remove/friendrequest")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String removeFriendRequest(String jsonString) throws NotFoundException, ParseException {
+        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+        JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
+        String token = json.get("token").getAsString();
+        UserPrincipal userPrin;
+        try {
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+        } catch (JOSEException | AuthenticationException ex) {
+            throw new WebApplicationException(ex.getMessage(), 401);
+        }
+        
+        String username = userPrin.getName();
+        String request_username = json.get("request_username").getAsString();
+        User user;
+        try {
+            user = FACADE.removeFriendRequest(username, request_username);
+        } catch (NotFoundException ex) {
+            throw new WebApplicationException("The requested friend request could not be found", 404);
+        } 
+        
+        return GSON.toJson("Friend Request has been removed");
+    }
 
 }

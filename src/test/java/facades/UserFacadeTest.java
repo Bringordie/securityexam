@@ -86,7 +86,7 @@ public class UserFacadeTest {
             f2 = new Friends(u1.getUserName());
 
             u1.addToFriendList(f1);
-            u2.addToFriendList(f2);
+            u4.addToFriendList(f2);
 
             em.getTransaction().begin();
             em.persist(u1);
@@ -257,6 +257,74 @@ public class UserFacadeTest {
             fail("Invalid user name");
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
+    
+    /**
+     * Test of removeFriend method, of class UserFacade success.
+     */
+    @Test
+    public void removeFriendPass() throws NotFoundException, AuthenticationException {
+        assertEquals(1, u1.getFriendList().size());
+        User response = new User();
+        try {
+            //Removing friend
+            facade.removeFriend(u1.getUserName(), u4.getUserName());
+        } catch (NullPointerException | NotFoundException ex) {
+            final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
+        }
+        
+        em = emf.createEntityManager();
+        User findu1 = em.find(User.class, u1.getUserName());
+        assertEquals(0, findu1.getFriendList().size());
+        em.close();
+    }
+
+    /**
+     * Test of removeFriend method, of class UserFacade fail.
+     */
+    @Test
+    public void removeFriendFail() throws NotFoundException, AuthenticationException {
+        try {
+            User response = facade.removeFriend(u1.getUserName(), "Doesn't exist");
+            fail("Invalid user name");
+        } catch (NullPointerException | NotFoundException ex) {
+            final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
+    
+    /**
+     * Test of removeFriendRequest method, of class UserFacade success.
+     */
+    @Test
+    public void removeFriendRequestPass() throws NotFoundException, AuthenticationException {
+        assertEquals(1, u1.getFriendRequests().size());
+        User response = new User();
+        try {
+            //Removing friend request
+            facade.removeFriendRequest(u1.getUserName(), u2.getUserName());
+        } catch (NullPointerException | NotFoundException ex) {
+            final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
+        }
+        
+        em = emf.createEntityManager();
+        User findu1 = em.find(User.class, u1.getUserName());
+        assertEquals(0, findu1.getFriendRequests().size());
+        em.close();
+    }
+
+    /**
+     * Test of removeFriendRequest method, of class UserFacade fail.
+     */
+    @Test
+    public void removeFriendRequestFail() throws NotFoundException, AuthenticationException {
+        try {
+            User response = facade.removeFriendRequest(u1.getUserName(), "Doesn't exist");
+            fail("Invalid user name");
+        } catch (NullPointerException | NotFoundException ex) {
+            final String msg = "No friend request found.";
             assertEquals(msg, ex.getMessage());
         }
     }

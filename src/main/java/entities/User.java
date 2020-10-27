@@ -88,10 +88,6 @@ public class User implements Serializable {
         this.friendRequests.add(friendRequest);
     }
 
-    public void removeFriendRequest(FriendRequest friendRequest) {
-        this.friendRequests.remove(friendRequest);
-    }
-
     public void addUserPost(UserPosts userPost) {
         this.userPosts.add(userPost);
     }
@@ -102,10 +98,6 @@ public class User implements Serializable {
 
     public void addToFriendList(Friends user) {
         this.friendList.add(user);
-    }
-
-    public void removeFromFriendList(Friends user) {
-        this.friendList.remove(user);
     }
 
     public List<Friends> getFriendList() {
@@ -183,6 +175,18 @@ public class User implements Serializable {
         for (FriendRequest friendRequest : friendRequests) {
         if (friendRequest.getRequestUsername().equals(requestUserName)) {
             friendRequests.remove(friendRequest);
+            response = true;
+            break;
+        }
+    }
+        return response;
+    }
+    
+    public Boolean removeFriend(String requestUserName) {
+        Boolean response = false;
+        for (Friends friendRemove : friendList) {
+        if (friendRemove.getFriendUsername().equals(requestUserName)) {
+            friendList.remove(friendRemove);
             response = true;
             break;
         }

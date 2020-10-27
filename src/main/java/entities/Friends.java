@@ -34,8 +34,6 @@ public class Friends implements Serializable {
     public Friends(String friendUsername) {
         this.friendUsername = friendUsername;
     }
-    
-    
 
     public void addFriend(String username) {
         this.friendUsername = username;
@@ -47,6 +45,14 @@ public class Friends implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getFriendUsername() {
+        return friendUsername;
+    }
+
+    public void setFriendUsername(String friendUsername) {
+        this.friendUsername = friendUsername;
     }
 
     @Override
