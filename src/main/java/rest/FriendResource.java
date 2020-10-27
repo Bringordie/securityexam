@@ -5,12 +5,15 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.nimbusds.jose.JOSEException;
+import dtos.user.UserDTO;
 import entities.User;
 import errorhandling.AlreadyExistsException;
 import errorhandling.AuthenticationException;
 import errorhandling.NotFoundException;
 import facades.UserFacade;
+import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
@@ -150,6 +153,33 @@ public class FriendResource {
         } 
         
         return GSON.toJson("Friend Request has been removed");
+    }
+    
+    @POST
+    @Path("/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String friendSearch(String jsonString) throws NotFoundException, ParseException, SQLException, ClassNotFoundException {
+        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+        JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
+        String token = json.get("token").getAsString();
+        UserPrincipal userPrin;
+        try {
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+        } catch (JOSEException | AuthenticationException ex) {
+            throw new WebApplicationException(ex.getMessage(), 401);
+        }
+        
+        String username = userPrin.getName();
+        String searchName = json.get("search_name").getAsString();
+        List<UserDTO> dtoList;
+        try {
+            dtoList = FACADE.friendSearch(searchName);
+        } catch (NotFoundException ex) {
+            throw new WebApplicationException("No users could be found by this search", 404);
+        }
+        
+        return GSON.toJson(dtoList);
     }
 
 }

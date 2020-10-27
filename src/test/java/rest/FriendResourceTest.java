@@ -2,6 +2,7 @@ package rest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dtos.user.UserDTO;
 import entities.FriendRequest;
 import entities.Friends;
 import entities.Role;
@@ -65,6 +66,7 @@ public class FriendResourceTest {
         EMF_Creator.startREST_TestWithDB();
         emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.TEST, EMF_Creator.Strategy.CREATE);
         facade = UserFacade.getUserFacade(emf);
+        facade.serverStatus = false;
         httpServer = startServer();
         //Setup RestAssured
         RestAssured.baseURI = SERVER_URL;
@@ -198,7 +200,6 @@ public class FriendResourceTest {
         //assertEquals(0, u4.getFriendList().size());
         User user = facade.addFriendRequest(u4.getUserName(), u2.getUserName());
 
-        //User findu4 = em.find(User.class, u4.getUserName());
         assertEquals(1, user.getFriendRequests().size());
 
         //Creating a JSON Object
@@ -272,7 +273,6 @@ public class FriendResourceTest {
 
         User user = facade.addFriendRequest(u4.getUserName(), u2.getUserName());
 
-        //User findu4 = em.find(User.class, u4.getUserName());
         assertEquals(1, user.getFriendRequests().size());
 
         //Creating a JSON Object
@@ -311,6 +311,52 @@ public class FriendResourceTest {
                 .contentType("application/json")
                 .body(obj)
                 .when().request("POST", "/friend/remove/friendrequest").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
+
+    }
+    
+    @Test
+    public void successFriendSearch() throws NotFoundException {
+        EntityManager em = emf.createEntityManager();
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u1.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        //Creating a JSON Object
+        JSONObject json = new JSONObject();
+        json.put("search_name", "admin");
+        json.put("token", token);
+
+        UserDTO[] response = with()
+                .contentType("application/json")
+                .body(json)
+                .when().request("POST", "/friend/search").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .extract()
+                .as(UserDTO[].class); //extract result JSON as object
+
+        assertNotNull(response);
+        assertEquals(u4.getFullName(), response[0].getFullName());
+        assertEquals(1, response.length);
+    }
+
+    @Test
+    public void failFriendSearch() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u1.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        //Creating a JSON Object
+        JSONObject obj = new JSONObject();
+        obj.put("token", token);
+        obj.put("search_name", "not found");
+
+        with()
+                .contentType("application/json")
+                .body(obj)
+                .when().request("POST", "/friend/search").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
 

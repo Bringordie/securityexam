@@ -326,10 +326,5 @@ public class UserFacade {
         return userDTOList;
     }
     
-    public static void main(String[] args) throws NotFoundException, SQLException, ClassNotFoundException {
-        UserFacade test = new UserFacade();
-        List<UserDTO> result = test.friendSearch("u");
-        System.out.println(result);
-    }
 
 }
