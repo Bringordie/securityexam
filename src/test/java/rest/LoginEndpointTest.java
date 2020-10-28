@@ -102,7 +102,6 @@ public class LoginEndpointTest {
             u4 = new User("Admin admin", "admin", "test", "where I went to school", UUID.randomUUID().toString());
             u4.addRole(r2);
 
-
             em.getTransaction().commit();
 
             em.getTransaction().begin();
