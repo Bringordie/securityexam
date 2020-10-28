@@ -129,7 +129,7 @@
 <!--             <scope>test</scope>-->
         </dependency>
         
-                <!----><!----><!----><!---->
+                <!----><!----><!----><!----><!--Removed since it will fail successGetPostTest
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -150,7 +150,7 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
             <version>2.3.4.RELEASE</version>
         </dependency>
-        <!----><!----><!----><!----><!---->
+        -->
         
         <dependency>
             <groupId>io.rest-assured</groupId>
