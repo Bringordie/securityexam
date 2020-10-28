@@ -75,9 +75,6 @@ public class RegistrationResourceTest {
             u1.addRole(r1);
             u2.addRole(r2);
 
-            em.persist(r1);
-            em.persist(r2);
-
             em.persist(u1);
             em.persist(u2);
             em.getTransaction().commit();

@@ -5,10 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.nimbusds.jose.JOSEException;
+import dtos.user.UserDTO;
 import entities.User;
 import entities.UserPosts;
 import errorhandling.AlreadyExistsException;
 import errorhandling.AuthenticationException;
+import errorhandling.NoFriendsException;
 import errorhandling.NotFoundException;
 import facades.UserFacade;
 import java.text.ParseException;
@@ -45,7 +47,7 @@ public class PostResource {
     @Context
     SecurityContext securityContext;
 
-    @GET
+    @POST
     @Path("/own")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -69,6 +71,32 @@ public class PostResource {
 
         return GSON.toJson(response);
     }
+    
+    @POST
+    @Path("/friends")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getFriendsPosts(String jsonString) throws ParseException, JOSEException, AuthenticationException, NotFoundException, NoFriendsException {
+        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+        JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
+        String token = json.get("token").getAsString();
+        UserPrincipal userPrin;
+        try {
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+        } catch (JOSEException | AuthenticationException ex) {
+            throw new WebApplicationException(ex.getMessage(), 401);
+        }
+
+        int usernameID = userPrin.getNameID();
+        List<UserDTO> response;
+        try {
+        response = FACADE.friendPosts(usernameID);
+        } catch (NoFriendsException ex) {
+            throw new WebApplicationException("This user currently has no friends in their friendlist.", 404);
+        }
+
+        return GSON.toJson(response);
+    }
 
     @POST
     @Path("/create")
@@ -85,10 +113,10 @@ public class PostResource {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
 
-        int username = userPrin.getNameID();
+        int usernameID = userPrin.getNameID();
         String newPost = json.get("post").getAsString();
 
-        Boolean response = FACADE.createPost(username, newPost);
+        Boolean response = FACADE.createPost(usernameID, newPost);
         if (!response) {
             throw new WebApplicationException("Something unexpected happened. Please try again later", 400);
         }

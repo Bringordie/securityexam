@@ -27,8 +27,8 @@ public class Role implements Serializable {
     @Column(name = "role_name", length = 20)
     private String roleName;
     
-    @OneToMany(mappedBy = "role")
-    private List<User> userList;
+//    @OneToMany(mappedBy = "role")
+//    private List<User> userList;
 
     public Role() {
     }
@@ -45,18 +45,18 @@ public class Role implements Serializable {
         this.roleName = roleName;
     }
 
-    public List<User> getUserList() {
-        return userList;
-    }
+//    public List<User> getUserList() {
+//        return userList;
+//    }
+//
+//    public void setUserList(List<User> userList) {
+//        this.userList = userList;
+//    }
 
-    public void setUserList(List<User> userList) {
-        this.userList = userList;
-    }
-
-    @Override
-    public String toString() {
-        return "Role{" + "roleName=" + roleName + ", userList=" + userList + '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "Role{" + "roleName=" + roleName + ", userList=" + userList + '}';
+//    }
 
     
     

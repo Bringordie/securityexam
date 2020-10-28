@@ -96,14 +96,12 @@ public class LoginEndpointTest {
             u1 = new User("User user", "user", "test", "where I was born", UUID.randomUUID().toString());
             u1.addRole(r1);
             u2 = new User("User2 user", "user2", "test", "where I went to school", UUID.randomUUID().toString());
-            u1.addRole(r1);
+            u2.addRole(r1);
             u3 = new User("User3 user", "user3", "test", "where I first traveled to", UUID.randomUUID().toString());
-            u1.addRole(r1);
+            u3.addRole(r1);
             u4 = new User("Admin admin", "admin", "test", "where I went to school", UUID.randomUUID().toString());
             u4.addRole(r2);
 
-            em.persist(r1);
-            em.persist(r2);
 
             em.getTransaction().commit();
 

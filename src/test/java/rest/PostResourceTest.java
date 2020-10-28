@@ -39,12 +39,11 @@ public class PostResourceTest {
     private static final int SERVER_PORT = 7777;
     private static final String SERVER_URL = "http://localhost/api/";
     private EntityManager em;
-    private static String securityToken;
+    private static UserFacade facade;
 
     static final URI BASE_URI = UriBuilder.fromUri(SERVER_URL).port(SERVER_PORT).build();
     private static HttpServer httpServer;
     private static EntityManagerFactory emf;
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private User u1, u2, u3, u4;
     private Role r1, r2;
@@ -62,6 +61,8 @@ public class PostResourceTest {
         //This method must be called before you request the EntityManagerFactory
         EMF_Creator.startREST_TestWithDB();
         emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.TEST, EMF_Creator.Strategy.CREATE);
+        facade = UserFacade.getUserFacade(emf);
+        facade.serverStatus = false;
         httpServer = startServer();
         //Setup RestAssured
         RestAssured.baseURI = SERVER_URL;
@@ -83,26 +84,20 @@ public class PostResourceTest {
 
             r1 = new Role("user");
             r2 = new Role("admin");
+
             u1 = new User("User user", "user", "test", "where I was born", UUID.randomUUID().toString());
             u1.addRole(r1);
             u2 = new User("User2 user", "user2", "test", "where I went to school", UUID.randomUUID().toString());
-            u1.addRole(r1);
+            u2.addRole(r1);
             u3 = new User("User3 user", "user3", "test", "where I first traveled to", UUID.randomUUID().toString());
-            u1.addRole(r1);
+            u3.addRole(r1);
             u4 = new User("Admin admin", "admin", "test", "where I went to school", UUID.randomUUID().toString());
             u4.addRole(r2);
 
-            em.persist(r1);
-            em.persist(r2);
-
-            em.getTransaction().commit();
-            
-            em.getTransaction().begin();
             em.persist(u1);
             em.persist(u2);
             em.persist(u3);
             em.persist(u4);
-
             em.getTransaction().commit();
 
             up1 = new UserPosts("This is a post made by a user");
@@ -111,12 +106,11 @@ public class PostResourceTest {
             u1.addUserPost(up1);
             u4.addUserPost(up2);
 
-            // Out commented these as it's easier to have an overview of the friend tests.
-//            f1 = new Friends(u4.getUserName());
-//            f2 = new Friends(u1.getUserName());
-//
-//            u1.addToFriendList(f1);
-//            u2.addToFriendList(f2);
+            f1 = new Friends(u4.getId());
+            f2 = new Friends(u1.getId());
+
+            u1.addToFriendList(f1);
+            u2.addToFriendList(f2);
 
             fr1 = new FriendRequest(u2.getId(), u2.getFullName(), u2.getProfilePicture());
             fr2 = new FriendRequest(u1.getId(), u1.getFullName(), u1.getProfilePicture());
@@ -152,9 +146,7 @@ public class PostResourceTest {
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
         obj.put("token", token);
-        obj.put("username", u1.getUserName());
         obj.put("post", "This is a very good post, please like and share");
-        obj.put("usernameID", u1.getId());
 
         given() //include object in body
                 .contentType("application/json")
@@ -197,33 +189,9 @@ public class PostResourceTest {
                 .assertThat()
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode());
     }
-    
-    //Another try of seeing what could be wrong below.
-    @Ignore
-    public void testtest() {
-        LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
-        String token = getToken.securityToken;
-        //Creating a JSON Object
-        JSONObject obj = new JSONObject();
-        obj.put("token", token);
 
-
-        String response = with()
-                .contentType("application/json")
-                .body(obj)
-                .when().request("GET", "/post/own").then() //post REQUEST
-                .assertThat()
-                .statusCode(HttpStatus.OK_200.getStatusCode())
-                .extract()
-                .as(String.class); //extract result JSON as object
-        
-        assertNotNull(response);
-    }
-    
-
-    //Manuel tested but unsure why this test fails.
-    @Ignore
+    //Doesn't seem like I can make @GET with a @Consumes. Manuel tested and works fine but unsure why this test fails.
+    @Test
     public void successGetPostTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
         getToken.login(u1.getUserName(), "test");
@@ -237,18 +205,18 @@ public class PostResourceTest {
                 = with()
                         .contentType("application/json")
                         .body(obj)
-                        .when().request("GET", "/post/own").then() //post REQUEST
+                        .when().request("POST", "/post/own").then() //post REQUEST
                         .assertThat()
                         .statusCode(HttpStatus.OK_200.getStatusCode())
                         .extract()
                         .as(UserPosts[].class); //extract result JSON as object
-        
+
         assertNotNull(result);
         assertEquals(1, result.length);
     }
 
-    //Manuel tested but unsure why this test fails.
-    @Ignore
+    //Doesn't seem like I can make @GET with a @Consumes. Manuel tested and works fine but unsure why this test fails.
+    @Test
     public void failGetPostTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
         getToken.login(u2.getUserName(), "test");
@@ -261,7 +229,44 @@ public class PostResourceTest {
         given() //include object in body
                 .contentType("application/json")
                 .body(obj)
-                .when().get("post/own").then() //get REQUEST
+                .when().post("post/own").then() //get REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
+
+    }
+
+    //Doesn't seem like I can make @GET with a @Consumes. Manuel tested and works fine but unsure why this test fails.
+    @Test
+    public void getFriendsPostsPass() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u1.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        JSONObject obj = new JSONObject();
+        obj.put("token", token);
+
+        given() //include object in body
+                .contentType("application/json")
+                .body(obj)
+                .when().post("/post/friends").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode());
+    }
+
+    //Doesn't seem like I can make @GET with a @Consumes. Manuel tested and works fine but unsure why this test fails.
+    @Test
+    public void getFriendsPostsFailNoFriends() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.login(u3.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        JSONObject obj = new JSONObject();
+        obj.put("token", token);
+
+        given() //include object in body
+                .contentType("application/json")
+                .body(obj)
+                .when().post("/post/friends").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
     }
