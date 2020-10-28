@@ -1,6 +1,7 @@
 package facades;
 
 import dtos.user.UserDTO;
+import dtos.user.UserPostsDTO;
 import entities.FriendRequest;
 import entities.Friends;
 import entities.Role;
@@ -10,6 +11,7 @@ import errorhandling.AlreadyExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import errorhandling.AuthenticationException;
+import errorhandling.NoFriendsException;
 import errorhandling.NotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import utils.EMF_Creator;
 import utils.EMF_Creator.DbSelector;
 
@@ -339,13 +342,40 @@ public class UserFacade {
             }
             rs.close();
             ps.close();
-            if (userDTOList.isEmpty()){
+            if (userDTOList.isEmpty()) {
                 throw new NotFoundException("No results by this name was found");
             }
         } catch (NullPointerException | NotFoundException ex) {
             throw new NotFoundException("No results by this name was found");
-        } 
+        }
         return userDTOList;
+    }
+
+    public List<UserDTO> friendPosts(int userRequesterID) throws NotFoundException, NoFriendsException {
+        EntityManager em = emf.createEntityManager();
+        User user, userFriend;
+        List<UserDTO> friendPosts = new ArrayList();
+        try {
+            em.getTransaction().begin();
+            user = em.find(User.class, userRequesterID);
+            if (user.getFriendList().isEmpty()) {
+                throw new NoFriendsException("This user currently has no friends in their friendlist.");
+            }
+            for (Friends friend : user.getFriendList()) {
+                userFriend = em.find(User.class, friend.getFriendUsernameID());
+                UserDTO userDTO = new UserDTO(userFriend);
+                for (UserPosts post : userFriend.getUserPosts()) {
+                    UserPostsDTO postDTO = new UserPostsDTO(post);
+                    userDTO.addToPostList(postDTO);
+                }
+                friendPosts.add(userDTO);
+            }
+        } catch (NullPointerException ex) {
+            throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
+        } finally {
+            em.close();
+        }
+        return friendPosts;
     }
     
 

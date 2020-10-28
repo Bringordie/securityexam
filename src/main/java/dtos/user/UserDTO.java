@@ -1,22 +1,34 @@
 package dtos.user;
 
 import entities.User;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDTO {
 
     String fullName;
     String profilePicture;
     int userID;
+    List<UserPostsDTO> posts = new ArrayList();
 
     public UserDTO(User user) {
         this.fullName = user.getFullName();
         this.profilePicture = user.getProfilePicture();
         this.userID = user.getId();
-
     }
 
     public UserDTO() {
     }
+    
+    public void addToPostList(UserPostsDTO post) {
+        this.posts.add(post);
+    }
+
+    public List<UserPostsDTO> getPosts() {
+        return posts;
+    }
+    
+    
 
     public String getFullName() {
         return fullName;

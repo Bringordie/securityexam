@@ -7,6 +7,7 @@ import entities.Role;
 import entities.User;
 import entities.UserPosts;
 import errorhandling.AuthenticationException;
+import errorhandling.NoFriendsException;
 import errorhandling.NotFoundException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -359,6 +360,36 @@ public class UserFacadeTest {
             fail("Invalid user name");
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "No results by this name was found";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
+    
+    /**
+     * Test of friendPosts method, of class UserFacade success.
+     */
+    @Test
+    public void friendPostsPass() throws NotFoundException, NoFriendsException {
+        List<UserDTO> response = new ArrayList();
+        try {
+            response = facade.friendPosts(u1.getId());
+        } catch (NoFriendsException | NotFoundException ex) {
+            throw new NotFoundException("No results was found");
+        }
+        
+        assertNotNull(response);
+        assertEquals(u4.getUserPosts().get(0).getMessage(), response.get(0).getPosts().get(0).getMessage());
+    }
+
+    /**
+     * Test of friendPosts method, of class UserFacade fail.
+     */
+    @Test
+    public void friendPostsFail() throws NotFoundException, NoFriendsException {
+        try {
+            List<UserDTO> response = facade.friendPosts(u3.getId());
+            fail("Invalid user currrently has no friends");
+        } catch (NoFriendsException ex) {
+            final String msg = "This user currently has no friends in their friendlist.";
             assertEquals(msg, ex.getMessage());
         }
     }
