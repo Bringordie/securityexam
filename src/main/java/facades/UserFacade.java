@@ -324,7 +324,7 @@ public class UserFacade {
 
     public List<UserDTO> friendSearch(String name) throws NotFoundException, SQLException, ClassNotFoundException {
         List<UserDTO> userDTOList = new ArrayList();
-        String query = "SELECT full_name, profile_picture FROM users WHERE full_name LIKE ?";
+        String query = "SELECT full_name, profile_picture, user_id FROM users WHERE full_name LIKE ?";
         try {
             PreparedStatement ps = createConnection().prepareStatement(query);
             ps.setString(1, "%" + name + "%");
@@ -334,6 +334,7 @@ public class UserFacade {
                 UserDTO dto = new UserDTO();
                 dto.setFullName(rs.getString("full_name"));
                 dto.setProfilePicture(rs.getString("profile_picture"));
+                dto.setUserID(rs.getInt("user_id"));
                 userDTOList.add(dto);
             }
             rs.close();
