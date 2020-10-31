@@ -138,18 +138,17 @@ public class PostResourceTest {
 
     @Test
     public void successfullCreatePostTest() {
-
         LoginEndpointTest getToken = new LoginEndpointTest();
         getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("token", token);
         obj.put("post", "This is a very good post, please like and share");
 
         given() //include object in body
                 .contentType("application/json")
+                .header("x-access-token", token)
                 .body(obj)
                 .when().post("/post/create").then() //post REQUEST
                 .assertThat()
@@ -157,16 +156,14 @@ public class PostResourceTest {
     }
 
     @Test
-    public void failCreatePostTest() {
+    public void failCreatePostTestNoValidToken() {
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("token", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZSI6InVzZXIiLCJleHAiOjE2MDM2MjU1MzAsImlhdCI6MTYwMzYyMzczMCwiaXNzdWVyIjoic2VtZXN0ZXJzdGFydGNvZGUtZGF0MyIsInVzZXJuYW1lIjoidXNlciJ9.mLrZ_pPX8GPIpBGnGEnG2eSUCh6Pcrz7Eq0uyEDOr2");
-        obj.put("username", u1.getUserName());
         obj.put("post", "This is a very good post, please like and share");
-        obj.put("usernameID", 404);
 
         given() //include object in body
                 .contentType("application/json")
+                .header("x-access-token", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZSI6InVzZXIiLCJleHAiOjE2MDM2MjU1MzAsImlhdCI6MTYwMzYyMzczMCwiaXNzdWVyIjoic2VtZXN0ZXJzdGFydGNvZGUtZGF0MyIsInVzZXJuYW1lIjoidXNlciJ9.mLrZ_pPX8GPIpBGnGEnG2eSUCh6Pcrz7Eq0uyEDOr2")
                 .body(obj)
                 .when().post("/post/create").then() //post REQUEST
                 .assertThat()
@@ -174,38 +171,16 @@ public class PostResourceTest {
     }
 
     @Test
-    public void failCreatePostTestNoValidToken() {
-        //Creating a JSON Object
-        JSONObject obj = new JSONObject();
-        obj.put("token", "not_valid");
-        obj.put("username", u1.getUserName());
-        obj.put("post", "This is a very good post, please like and share");
-        obj.put("usernameID", u1.getId());
-
-        given() //include object in body
-                .contentType("application/json")
-                .body(obj)
-                .when().post("/post/create").then() //post REQUEST
-                .assertThat()
-                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode());
-    }
-
-    //Doesn't seem like I can make @GET with a @Consumes. Manuel tested and works fine but unsure why this test fails.
-    @Test
     public void successGetPostTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
         getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
-        //Creating a JSON Object
-        JSONObject obj = new JSONObject();
-        obj.put("token", token);
-
         UserPosts[] result
                 = with()
                         .contentType("application/json")
-                        .body(obj)
-                        .when().request("POST", "/post/own").then() //post REQUEST
+                        .header("x-access-token", token)
+                        .when().request("GET", "/post/own").then() //post REQUEST
                         .assertThat()
                         .statusCode(HttpStatus.OK_200.getStatusCode())
                         .extract()
@@ -215,58 +190,44 @@ public class PostResourceTest {
         assertEquals(1, result.length);
     }
 
-    //Doesn't seem like I can make @GET with a @Consumes. Manuel tested and works fine but unsure why this test fails.
     @Test
     public void failGetPostTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
         getToken.login(u2.getUserName(), "test");
         String token = getToken.securityToken;
 
-        //Creating a JSON Object
-        JSONObject obj = new JSONObject();
-        obj.put("token", token);
-
         given() //include object in body
                 .contentType("application/json")
-                .body(obj)
-                .when().post("post/own").then() //get REQUEST
+                .header("x-access-token", token)
+                .when().get("post/own").then() //get REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
-
     }
 
-    //Doesn't seem like I can make @GET with a @Consumes. Manuel tested and works fine but unsure why this test fails.
     @Test
     public void getFriendsPostsPass() {
         LoginEndpointTest getToken = new LoginEndpointTest();
         getToken.login(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
-        JSONObject obj = new JSONObject();
-        obj.put("token", token);
-
         given() //include object in body
                 .contentType("application/json")
-                .body(obj)
-                .when().post("/post/friends").then() //post REQUEST
+                .header("x-access-token", token)
+                .when().get("/post/friends").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.OK_200.getStatusCode());
     }
 
-    //Doesn't seem like I can make @GET with a @Consumes. Manuel tested and works fine but unsure why this test fails.
     @Test
     public void getFriendsPostsFailNoFriends() {
         LoginEndpointTest getToken = new LoginEndpointTest();
         getToken.login(u3.getUserName(), "test");
         String token = getToken.securityToken;
 
-        JSONObject obj = new JSONObject();
-        obj.put("token", token);
-
         given() //include object in body
                 .contentType("application/json")
-                .body(obj)
-                .when().post("/post/friends").then() //post REQUEST
+                .header("x-access-token", token)
+                .when().get("/post/friends").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
     }

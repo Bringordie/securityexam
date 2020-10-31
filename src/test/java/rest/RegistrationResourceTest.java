@@ -34,7 +34,7 @@ public class RegistrationResourceTest {
     private static HttpServer httpServer;
     private static EntityManagerFactory emf;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    
+
     private static User u1, u2;
     private static Role r1, r2;
     private static UserFacade facade;
@@ -57,7 +57,6 @@ public class RegistrationResourceTest {
         RestAssured.baseURI = SERVER_URL;
         RestAssured.port = SERVER_PORT;
         RestAssured.defaultParser = Parser.JSON;
-        
 
         //Create 2 dummy users
         EntityManager em = emf.createEntityManager();

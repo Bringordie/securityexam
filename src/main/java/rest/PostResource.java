@@ -20,6 +20,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
@@ -47,17 +48,15 @@ public class PostResource {
     @Context
     SecurityContext securityContext;
 
-    @POST
+    @GET
     @Path("/own")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String getPosts(String jsonString) throws ParseException, JOSEException, AuthenticationException, NotFoundException {
-        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+    public String getPosts(@HeaderParam("x-access-token") String accessToken) throws ParseException, JOSEException, AuthenticationException, NotFoundException {
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
-        String token = json.get("token").getAsString();
         UserPrincipal userPrin;
         try {
-            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(accessToken);
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
@@ -72,17 +71,15 @@ public class PostResource {
         return GSON.toJson(response);
     }
     
-    @POST
+    @GET
     @Path("/friends")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String getFriendsPosts(String jsonString) throws ParseException, JOSEException, AuthenticationException, NotFoundException, NoFriendsException {
-        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+    public String getFriendsPosts(@HeaderParam("x-access-token") String accessToken) throws ParseException, JOSEException, AuthenticationException, NotFoundException, NoFriendsException {
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
-        String token = json.get("token").getAsString();
         UserPrincipal userPrin;
         try {
-            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(accessToken);
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
@@ -102,13 +99,12 @@ public class PostResource {
     @Path("/create")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String createPost(String jsonString) throws ParseException, JOSEException, AuthenticationException {
+    public String createPost(String jsonString, @HeaderParam("x-access-token") String accessToken) throws ParseException, JOSEException, AuthenticationException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
-        String token = json.get("token").getAsString();
         UserPrincipal userPrin;
         try {
-            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(accessToken);
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }

@@ -18,6 +18,7 @@ import java.util.UUID;
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
@@ -49,13 +50,12 @@ public class FriendResource {
     @Path("/add")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String friendRequest(String jsonString) throws NotFoundException, ParseException {
+    public String friendRequest(String jsonString, @HeaderParam("x-access-token") String accessToken) throws NotFoundException, ParseException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
-        String token = json.get("token").getAsString();
         UserPrincipal userPrin;
         try {
-            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(accessToken);
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
@@ -76,13 +76,12 @@ public class FriendResource {
     @Path("/accept")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String acceptFriendRequest(String jsonString) throws NotFoundException, ParseException, AuthenticationException {
+    public String acceptFriendRequest(String jsonString, @HeaderParam("x-access-token") String accessToken) throws NotFoundException, ParseException, AuthenticationException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
-        String token = json.get("token").getAsString();
         UserPrincipal userPrin;
         try {
-            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(accessToken);
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
@@ -105,13 +104,12 @@ public class FriendResource {
     @Path("/remove")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String removeFriend(String jsonString) throws NotFoundException, ParseException {
+    public String removeFriend(String jsonString, @HeaderParam("x-access-token") String accessToken) throws NotFoundException, ParseException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
-        String token = json.get("token").getAsString();
         UserPrincipal userPrin;
         try {
-            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(accessToken);
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
@@ -132,13 +130,12 @@ public class FriendResource {
     @Path("/remove/friendrequest")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String removeFriendRequest(String jsonString) throws NotFoundException, ParseException {
+    public String removeFriendRequest(String jsonString, @HeaderParam("x-access-token") String accessToken) throws NotFoundException, ParseException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
-        String token = json.get("token").getAsString();
         UserPrincipal userPrin;
         try {
-            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(accessToken);
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
@@ -159,13 +156,12 @@ public class FriendResource {
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public String friendSearch(String jsonString) throws NotFoundException, ParseException, SQLException, ClassNotFoundException {
+    public String friendSearch(String jsonString, @HeaderParam("x-access-token") String accessToken) throws NotFoundException, ParseException, SQLException, ClassNotFoundException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
-        String token = json.get("token").getAsString();
         UserPrincipal userPrin;
         try {
-            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(accessToken);
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }

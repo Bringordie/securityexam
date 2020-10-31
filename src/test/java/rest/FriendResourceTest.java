@@ -152,11 +152,11 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("token", token);
         obj.put("request_username", u2.getId());
 
         String response = with()
                 .contentType("application/json")
+                .header("x-access-token", token)
                 .body(obj)
                 .when().request("POST", "/friend/add").then() //post REQUEST
                 .assertThat()
@@ -176,17 +176,15 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("token", token);
         obj.put("request_username", 404);
-        obj.put("usernameID",404);
 
         with()
                 .contentType("application/json")
+                .header("x-access-token", token)
                 .body(obj)
                 .when().request("POST", "/friend/add").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
-
     }
 
     @Test
@@ -204,10 +202,10 @@ public class FriendResourceTest {
         //Creating a JSON Object
         JSONObject json = new JSONObject();
         json.put("request_usernameID", u2.getId());
-        json.put("token", token);
 
         String response = with()
                 .contentType("application/json")
+                .header("x-access-token", token)
                 .body(json)
                 .when().request("POST", "/friend/accept").then() //post REQUEST
                 .assertThat()
@@ -231,11 +229,11 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("token", token);
         obj.put("request_usernameID", 404);
 
         with()
                 .contentType("application/json")
+                .header("x-access-token", token)
                 .body(obj)
                 .when().request("POST", "/friend/accept").then() //post REQUEST
                 .assertThat()
@@ -251,11 +249,11 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("token", token);
         obj.put("request_usernameID", u4.getId());
 
         with()
                 .contentType("application/json")
+                .header("x-access-token", token)
                 .body(obj)
                 .when().request("POST", "/friend/accept").then() //post REQUEST
                 .assertThat()
@@ -277,10 +275,10 @@ public class FriendResourceTest {
         //Creating a JSON Object
         JSONObject json = new JSONObject();
         json.put("request_username", u2.getId());
-        json.put("token", token);
 
         String response = with()
                 .contentType("application/json")
+                .header("x-access-token", token)
                 .body(json)
                 .when().request("POST", "/friend/remove/friendrequest").then() //post REQUEST
                 .assertThat()
@@ -303,16 +301,15 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("token", token);
         obj.put("request_username", 404);
 
         with()
                 .contentType("application/json")
+                .header("x-access-token", token)
                 .body(obj)
                 .when().request("POST", "/friend/remove/friendrequest").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
-
     }
     
     @Test
@@ -325,10 +322,10 @@ public class FriendResourceTest {
         //Creating a JSON Object
         JSONObject json = new JSONObject();
         json.put("search_name", "admin");
-        json.put("token", token);
 
         UserDTO[] response = with()
                 .contentType("application/json")
+                .header("x-access-token", token)
                 .body(json)
                 .when().request("POST", "/friend/search").then() //post REQUEST
                 .assertThat()
@@ -349,16 +346,14 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("token", token);
         obj.put("search_name", 404);
 
         with()
                 .contentType("application/json")
+                .header("x-access-token", token)
                 .body(obj)
                 .when().request("POST", "/friend/search").then() //post REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
-
     }
-
 }
