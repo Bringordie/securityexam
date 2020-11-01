@@ -143,7 +143,7 @@ public class LoginEndpointTest {
     public static String securityToken;
 
     //Utility method to login and set the returned securityToken
-    public static void login(String username, String password) {
+    public static void loginUser(String username, String password) {
         JSONObject json = new JSONObject();
         json.put("username", username);
         json.put("password", password);
@@ -151,6 +151,19 @@ public class LoginEndpointTest {
                 .contentType("application/json")
                 .body(json)
                 .when().post("/login")
+                .then()
+                .extract().path("token");
+        System.out.println("TOKEN ---> " + securityToken);
+    }
+    
+    public static void loginAdmin(String username, String password) {
+        JSONObject json = new JSONObject();
+        json.put("username", username);
+        json.put("password", password);
+        securityToken = given()
+                .contentType("application/json")
+                .body(json)
+                .when().post("/login/admin")
                 .then()
                 .extract().path("token");
         System.out.println("TOKEN ---> " + securityToken);
@@ -169,7 +182,7 @@ public class LoginEndpointTest {
 
         given().contentType("application/json")
                 .body(obj).when().post("/login")
-                .then().statusCode(403);
+                .then().statusCode(401);
     }
 
     @Test
@@ -186,7 +199,7 @@ public class LoginEndpointTest {
 
     @Test
     public void testLoginFunctionTest() {
-        login(u1.getUserName(), "test");
+        loginUser(u1.getUserName(), "test");
         assertNotNull(securityToken != null);
         System.out.println("The token is NOT NULL and it is: " + securityToken);
     }

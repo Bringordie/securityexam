@@ -80,10 +80,45 @@ public class UserFacade {
             }
             rs.close();
             ps.close();
+
             user = em.find(User.class, user.getId());
+            if (!user.getRole().getRoleName().equals("user")) {
+                throw new AuthenticationException("Admins cannot login here");
+            }
             if (user == null || !user.verifyPassword(password)) {
                 throw new AuthenticationException("Invalid user name or password");
             }
+        } catch(NullPointerException ex) {
+            throw new AuthenticationException("Invalid user name or password");
+        }finally {
+            em.close();
+        }
+        return user;
+    }
+
+    public User getVeryfiedAdmin(String username, String password) throws AuthenticationException, SQLException, ClassNotFoundException {
+        EntityManager em = emf.createEntityManager();
+        User user = new User();
+        String query = "SELECT * FROM users WHERE user_name = ?";
+        try {
+            PreparedStatement ps = createConnection().prepareStatement(query);
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                user.setId(rs.getInt("user_id"));
+            }
+            rs.close();
+            ps.close();
+
+            user = em.find(User.class, user.getId());
+            if (!user.getRole().getRoleName().equals("admin") || user.getRole().getRoleName().isEmpty()) {
+                throw new AuthenticationException("Users cannot login here");
+            }
+            if (user == null || !user.verifyPassword(password)) {
+                throw new AuthenticationException("Invalid user name or password");
+            }
+        } catch (NullPointerException ex) {
+           throw new AuthenticationException("Invalid user name or password");
         } finally {
             em.close();
         }
@@ -103,11 +138,11 @@ public class UserFacade {
             }
             rs.close();
             ps.close();
-            
+
             if (user.getId() == 0) {
                 throw new AuthenticationException("Invalid user name");
             }
-            
+
             user = em.find(User.class, user.getId());
             if (!user.getRole().getRoleName().equals("user")) {
                 throw new AuthenticationException("Admins cannot reset password this way");
@@ -394,6 +429,5 @@ public class UserFacade {
         }
         return friendPosts;
     }
-    
 
 }

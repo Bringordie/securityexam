@@ -31,10 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static rest.LoginEndpointTest.login;
 import static rest.LoginEndpointTest.securityToken;
 import static rest.LoginEndpointTest.startServer;
 import utils.EMF_Creator;
+import static rest.LoginEndpointTest.loginUser;
 
 public class FriendResourceTest {
 
@@ -147,7 +147,7 @@ public class FriendResourceTest {
     @Test
     public void successMakeFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.loginUser(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -171,7 +171,7 @@ public class FriendResourceTest {
     @Test
     public void failMakeFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.loginUser(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -191,7 +191,7 @@ public class FriendResourceTest {
     public void successAcceptFriendRequest() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u4.getUserName(), "test");
+        getToken.loginAdmin(u4.getUserName(), "test");
         String token = getToken.securityToken;
 
         //assertEquals(0, u4.getFriendList().size());
@@ -202,6 +202,8 @@ public class FriendResourceTest {
         //Creating a JSON Object
         JSONObject json = new JSONObject();
         json.put("request_usernameID", u2.getId());
+        //ADD ONCE FINISHED
+        //json.put("ipaddress", "127.0.0.1");
 
         String response = with()
                 .contentType("application/json")
@@ -224,7 +226,7 @@ public class FriendResourceTest {
     @Test
     public void failAcceptFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.loginUser(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -244,7 +246,7 @@ public class FriendResourceTest {
     @Test
     public void hardFailAcceptFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.loginUser(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -265,7 +267,7 @@ public class FriendResourceTest {
     public void successRemoveFriendRequest() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u4.getUserName(), "test");
+        getToken.loginAdmin(u4.getUserName(), "test");
         String token = getToken.securityToken;
 
         User user = facade.addFriendRequest(u4.getId(), u2.getId());
@@ -275,6 +277,8 @@ public class FriendResourceTest {
         //Creating a JSON Object
         JSONObject json = new JSONObject();
         json.put("request_username", u2.getId());
+        //ADD ONCE FINISHED
+        //json.put("ipaddress", "127.0.0.1");
 
         String response = with()
                 .contentType("application/json")
@@ -296,7 +300,7 @@ public class FriendResourceTest {
     @Test
     public void failRemoveFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.loginUser(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -316,7 +320,7 @@ public class FriendResourceTest {
     public void successFriendSearch() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.loginUser(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -341,7 +345,7 @@ public class FriendResourceTest {
     @Test
     public void failFriendSearch() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.loginUser(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object

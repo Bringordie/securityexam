@@ -47,7 +47,7 @@ public class LoginEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response login(String jsonString) throws AuthenticationException, SQLException, ClassNotFoundException {
+    public Response loginUser(String jsonString) throws AuthenticationException, SQLException, ClassNotFoundException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         String username = json.get("username").getAsString();
         String password = json.get("password").getAsString();
@@ -62,12 +62,9 @@ public class LoginEndpoint {
             return Response.ok(new Gson().toJson(responseJson)).build();
 
         } catch (JOSEException | AuthenticationException ex) {
-            if (ex instanceof AuthenticationException) {
-                throw (AuthenticationException) ex;
-            }
-            Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
+            throw new WebApplicationException("Invalid username or secret! Please try again", 401);
+            //Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
         }
-        throw new AuthenticationException("Invalid username or password! Please try again");
     }
 
     @PUT
@@ -110,5 +107,40 @@ public class LoginEndpoint {
         signedJWT.sign(signer);
         return signedJWT.serialize();
     }
+    
+    @POST
+    @Path("/admin")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response loginAdmin(String jsonString) throws AuthenticationException, SQLException, ClassNotFoundException {
+        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+        String username = json.get("username").getAsString();
+        String password = json.get("password").getAsString();
+        
+        //Uncomment and fix tests ones this has been decided.
+//        String ipaddress = json.get("ipaddress").getAsString();
+//        if (!ipaddress.equals("127.0.0.1")) {
+//            throw new WebApplicationException("Forbidden. Request made to login outside workplace.", 403);
+//        }
+        
+        int usernameID;
+
+        try {
+            User user = USER_FACADE.getVeryfiedAdmin(username, password);
+            usernameID = user.getId();
+            String token = createToken(username, usernameID, user.getRole());
+            JsonObject responseJson = new JsonObject();
+            responseJson.addProperty("token", token);
+            return Response.ok(new Gson().toJson(responseJson)).build();
+
+        } catch (JOSEException | AuthenticationException ex) {
+            if (ex instanceof AuthenticationException) {
+                throw new WebApplicationException("Forbidden. Request made to login outside workplace.", 401);
+            }
+            Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
+        } 
+        throw new AuthenticationException("Invalid username or password! Please try again");
+    }
+
 
 }

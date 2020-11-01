@@ -66,21 +66,17 @@ public class UserFacadeTest {
 
             r1 = new Role("user");
             r2 = new Role("admin");
-            u1 = new User("User user", "user", "test", "where I was born", UUID.randomUUID().toString());
+            u1 = new User("User user", "user", "password", "where I was born", UUID.randomUUID().toString());
             u1.addRole(r1);
-            u2 = new User("User2 user", "user2", "test", "where I went to school", UUID.randomUUID().toString());
-            u1.addRole(r1);
-            u3 = new User("User3 user", "user3", "test", "where I first traveled to", UUID.randomUUID().toString());
-            u1.addRole(r1);
-            u4 = new User("Admin admin", "admin", "test", "where I went to school", UUID.randomUUID().toString());
+            u2 = new User("User2 user", "user2", "password", "where I went to school", UUID.randomUUID().toString());
+            u2.addRole(r1);
+            u3 = new User("User3 user", "user3", "password", "where I first traveled to", UUID.randomUUID().toString());
+            u3.addRole(r1);
+            u4 = new User("Admin admin", "admin", "password", "where I went to school", UUID.randomUUID().toString());
             u4.addRole(r2);
 
-            em.persist(r1);
-            em.persist(r2);
-
             em.getTransaction().commit();
-            
-            //Creating users
+
             em.getTransaction().begin();
             em.persist(u1);
             em.persist(u2);
@@ -100,7 +96,6 @@ public class UserFacadeTest {
 
             u1.addToFriendList(f1);
             u4.addToFriendList(f2);
-
             fr1 = new FriendRequest(u2.getId(), u2.getFullName(), u2.getProfilePicture());
             fr2 = new FriendRequest(u1.getId(), u1.getFullName(), u1.getProfilePicture());
 
@@ -160,7 +155,7 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
-    
+
     /**
      * Test of getUserResetPassword method, of class UserFacade success.
      */
@@ -183,7 +178,7 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
-    
+
     /**
      * Test of getUserResetPassword method, of class UserFacade fail.
      */
@@ -197,22 +192,22 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
-    
+
     /**
      * Test of addFriendRequest method, of class UserFacade success.
      */
     @Test
     public void userAddFriendRequestPass() throws NotFoundException, AuthenticationException {
         assertEquals(1, u3.getFriendRequests().size());
-        
+
         User response = facade.addFriendRequest(u3.getId(), u2.getId());
-        
+
         em = emf.createEntityManager();
         User findu3 = em.find(User.class, u3.getId());
         assertEquals(2, findu3.getFriendRequests().size());
         em.close();
         assertNotNull(response);
-        
+
     }
 
     /**
@@ -228,7 +223,7 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
-    
+
     /**
      * Test of acceptFriendRequest method, of class UserFacade success.
      */
@@ -245,7 +240,7 @@ public class UserFacadeTest {
             final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
         }
         assertNotNull(response);
-        
+
         em = emf.createEntityManager();
         User findu3 = em.find(User.class, u3.getId());
         assertEquals(1, findu3.getFriendList().size());
@@ -265,7 +260,7 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
-    
+
     /**
      * Test of removeFriend method, of class UserFacade success.
      */
@@ -279,7 +274,7 @@ public class UserFacadeTest {
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
         }
-        
+
         em = emf.createEntityManager();
         User findu1 = em.find(User.class, u1.getId());
         assertEquals(0, findu1.getFriendList().size());
@@ -299,7 +294,7 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
-    
+
     /**
      * Test of removeFriendRequest method, of class UserFacade success.
      */
@@ -313,7 +308,7 @@ public class UserFacadeTest {
         } catch (NullPointerException | NotFoundException ex) {
             final String msg = "Something unexpected went wrong, user name doesn't seem to exist";
         }
-        
+
         em = emf.createEntityManager();
         User findu1 = em.find(User.class, u1.getId());
         assertEquals(0, findu1.getFriendRequests().size());
@@ -333,7 +328,7 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
-    
+
     /**
      * Test of friendSearch method, of class UserFacade success.
      */
@@ -345,7 +340,7 @@ public class UserFacadeTest {
         } catch (NullPointerException | NotFoundException ex) {
             throw new NotFoundException("No results by this name was found");
         }
-        
+
         assertNotNull(response);
         assertEquals(u4.getFullName(), response.get(0).getFullName());
     }
@@ -363,7 +358,7 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
-    
+
     /**
      * Test of friendPosts method, of class UserFacade success.
      */
@@ -375,7 +370,7 @@ public class UserFacadeTest {
         } catch (NoFriendsException | NotFoundException ex) {
             throw new NotFoundException("No results was found");
         }
-        
+
         assertNotNull(response);
         assertEquals(u4.getUserPosts().get(0).getMessage(), response.get(0).getPosts().get(0).getMessage());
     }
@@ -390,6 +385,44 @@ public class UserFacadeTest {
             fail("Invalid user currrently has no friends");
         } catch (NoFriendsException ex) {
             final String msg = "This user currently has no friends in their friendlist.";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
+
+    /**
+     * Test of getVeryfiedAdmin method, of class UserFacade success.
+     */
+    @Test
+    public void getVeryfiedAdminPass() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
+        User response = facade.getVeryfiedAdmin(u4.getUserName(), "password");
+        assertNotNull(response);
+        assertEquals(u4.getFullName(), response.getFullName());
+    }
+
+    /**
+     * Test of getVeryfiedAdmin method, of class UserFacade fail.
+     */
+    @Test
+    public void getVeryfiedAdminFail() throws NotFoundException, NoFriendsException, SQLException, ClassNotFoundException {
+        try {
+            User response = facade.getVeryfiedAdmin(u3.getUserName(), "password");
+            fail("Should fail");
+        } catch (AuthenticationException ex) {
+            final String msg = "Users cannot login here";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
+    
+    /**
+     * Test of getVeryfiedAdmin method, of class UserFacade fail.
+     */
+    @Test
+    public void getVeryfiedAdminFailVerify() throws NotFoundException, NoFriendsException, SQLException, ClassNotFoundException {
+        try {
+            User response = facade.getVeryfiedAdmin(u4.getUserName(), "wrong_password");
+            fail("Should fail");
+        } catch (AuthenticationException ex) {
+            final String msg = "Invalid user name or password";
             assertEquals(msg, ex.getMessage());
         }
     }

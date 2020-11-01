@@ -29,10 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static rest.LoginEndpointTest.login;
 import static rest.LoginEndpointTest.securityToken;
 import static rest.LoginEndpointTest.startServer;
 import utils.EMF_Creator;
+import static rest.LoginEndpointTest.loginUser;
 
 public class PostResourceTest {
 
@@ -139,7 +139,7 @@ public class PostResourceTest {
     @Test
     public void successfullCreatePostTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.loginUser(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         //Creating a JSON Object
@@ -173,7 +173,7 @@ public class PostResourceTest {
     @Test
     public void successGetPostTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.loginUser(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         UserPosts[] result
@@ -193,7 +193,7 @@ public class PostResourceTest {
     @Test
     public void failGetPostTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u2.getUserName(), "test");
+        getToken.loginUser(u2.getUserName(), "test");
         String token = getToken.securityToken;
 
         given() //include object in body
@@ -207,7 +207,7 @@ public class PostResourceTest {
     @Test
     public void getFriendsPostsPass() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u1.getUserName(), "test");
+        getToken.loginUser(u1.getUserName(), "test");
         String token = getToken.securityToken;
 
         given() //include object in body
@@ -221,7 +221,7 @@ public class PostResourceTest {
     @Test
     public void getFriendsPostsFailNoFriends() {
         LoginEndpointTest getToken = new LoginEndpointTest();
-        getToken.login(u3.getUserName(), "test");
+        getToken.loginUser(u3.getUserName(), "test");
         String token = getToken.securityToken;
 
         given() //include object in body
