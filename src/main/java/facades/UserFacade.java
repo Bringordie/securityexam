@@ -90,11 +90,28 @@ public class UserFacade {
         return user;
     }
 
-    public User userResetPassword(int usernameID, String secret, String newPassword) throws AuthenticationException {
+    public User userResetPassword(String username, String secret, String newPassword) throws AuthenticationException, SQLException, ClassNotFoundException {
         EntityManager em = emf.createEntityManager();
-        User user;
+        User user = new User();
+        String query = "SELECT * FROM users WHERE user_name = ?";
         try {
-            user = em.find(User.class, usernameID);
+            PreparedStatement ps = createConnection().prepareStatement(query);
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                user.setId(rs.getInt("user_id"));
+            }
+            rs.close();
+            ps.close();
+            
+            if (user.getId() == 0) {
+                throw new AuthenticationException("Invalid user name");
+            }
+            
+            user = em.find(User.class, user.getId());
+            if (!user.getRole().getRoleName().equals("user")) {
+                throw new AuthenticationException("Admins cannot reset password this way");
+            }
             Boolean verifySecretPassword = user.verifySecretAnswer(secret);
             if (user == null || !verifySecretPassword) {
                 throw new AuthenticationException("Invalid user name or secret");

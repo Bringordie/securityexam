@@ -74,24 +74,17 @@ public class LoginEndpoint {
     @Path("/reset/password")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String resetPassword(String jsonString) throws AuthenticationException, ParseException {
+    public String resetPassword(String jsonString) throws AuthenticationException, ParseException, SQLException, ClassNotFoundException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
-        String token = json.get("token").getAsString();
+        String username = json.get("username").getAsString();
         String secret = json.get("secret").getAsString();
         String newpassword = json.get("newpassword").getAsString();
-        UserPrincipal userPrin;
-        try {
-            userPrin = authenticate.getUserPrincipalFromTokenIfValid(token);
-        } catch (JOSEException | AuthenticationException ex) {
-            throw new WebApplicationException(ex.getMessage(), 401);
-        }
-        int usernameID = userPrin.getNameID();
         User user;
         try {
-            user = USER_FACADE.userResetPassword(usernameID, secret, newpassword);
-        } catch (AuthenticationException ex) {
-            throw new AuthenticationException("Invalid username or password! Please try again");
+            user = USER_FACADE.userResetPassword(username, secret, newpassword);
+        } catch (AuthenticationException | SQLException ex) {
+            throw new WebApplicationException("Invalid username or secret! Please try again", 401);
             //Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
         }
         return GSON.toJson("Password has been resat for user.");

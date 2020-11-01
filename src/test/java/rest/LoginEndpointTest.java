@@ -193,17 +193,16 @@ public class LoginEndpointTest {
 
     @Test
     public void resetPasswordPass() {
-        login(u1.getUserName(), "test");
 
         JSONObject obj = new JSONObject();
-        obj.put("token", securityToken);
+        obj.put("username", u1.getUserName());
         obj.put("secret", "where I was born");
         obj.put("newpassword", "new secure password");
 
         given() //include object in body
                 .contentType("application/json")
                 .body(obj)
-                .when().put("/login/reset/password").then() //post REQUEST
+                .when().put("/login/reset/password").then() //put REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.OK_200.getStatusCode());
     }
@@ -211,16 +210,31 @@ public class LoginEndpointTest {
     @Test
     public void resetPasswordFail() {
         JSONObject obj = new JSONObject();
-        obj.put("token", "not_valid");
-        obj.put("username", u1.getUserName());
-        obj.put("post", "This is a very good post, please like and share");
+        obj.put("username", "not_valid");
+        obj.put("secret", "where I was born");
+        obj.put("newpassword", "newsecure");
 
         given() //include object in body
                 .contentType("application/json")
                 .body(obj)
-                .when().put("/login/reset/password").then() //post REQUEST
+                .when().put("/login/reset/password").then() //put REQUEST
                 .assertThat()
-                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR_500.getStatusCode());
+                .statusCode(HttpStatus.UNAUTHORIZED_401.getStatusCode());
+    }
+    
+    @Test
+    public void resetPasswordFailAdmin() {
+        JSONObject obj = new JSONObject();
+        obj.put("username", u4.getUserName());
+        obj.put("secret", "where I went to school");
+        obj.put("newpassword", "newsecure");
+
+        given() //include object in body
+                .contentType("application/json")
+                .body(obj)
+                .when().put("/login/reset/password").then() //put REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.UNAUTHORIZED_401.getStatusCode());
     }
 
 }

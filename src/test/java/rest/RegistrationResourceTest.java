@@ -105,5 +105,5 @@ public class RegistrationResourceTest {
                 .assertThat()
                 .statusCode(HttpStatus.BAD_REQUEST_400.getStatusCode());
     }
-
+    
 }

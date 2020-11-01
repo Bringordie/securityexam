@@ -165,8 +165,8 @@ public class UserFacadeTest {
      * Test of getUserResetPassword method, of class UserFacade success.
      */
     @Test
-    public void userResetPasswordPass() throws NotFoundException, AuthenticationException {
-        User response = facade.userResetPassword(u1.getId(), "where I was born", "new password");
+    public void userResetPasswordPass() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
+        User response = facade.userResetPassword(u1.getUserName(), "where I was born", "new password");
         assertNotNull(response);
     }
 
@@ -174,9 +174,9 @@ public class UserFacadeTest {
      * Test of getUserResetPassword method, of class UserFacade fail.
      */
     @Test
-    public void userResetPasswordFail() throws NotFoundException, AuthenticationException {
+    public void userResetPasswordFail() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
         try {
-            User response = facade.userResetPassword(404, "incorrect", "incorrect");
+            User response = facade.userResetPassword("404", "incorrect", "incorrect");
             fail("Invalid user name or secret");
         } catch (NullPointerException | AuthenticationException ex) {
             final String msg = "Invalid user name or secret";
@@ -188,9 +188,9 @@ public class UserFacadeTest {
      * Test of getUserResetPassword method, of class UserFacade fail.
      */
     @Test
-    public void userResetPasswordFail2() throws NotFoundException, AuthenticationException {
+    public void userResetPasswordFail2() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
         try {
-            User response = facade.userResetPassword(u1.getId(), "incorrect", "new password");
+            User response = facade.userResetPassword(u1.getUserName(), "incorrect", "new password");
             fail("Invalid user name or secret");
         } catch (NullPointerException | AuthenticationException ex) {
             final String msg = "Invalid user name or secret";
