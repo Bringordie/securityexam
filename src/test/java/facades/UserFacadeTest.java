@@ -66,6 +66,11 @@ public class UserFacadeTest {
 
             r1 = new Role("user");
             r2 = new Role("admin");
+            em.persist(r1);
+            em.persist(r2);
+            em.getTransaction().commit();
+            
+            em.getTransaction().begin();
             u1 = new User("User user", "user", "password", "where I was born", UUID.randomUUID().toString());
             u1.addRole(r1);
             u2 = new User("User2 user", "user2", "password", "where I went to school", UUID.randomUUID().toString());
