@@ -91,7 +91,7 @@ public class RegistrationResourceTest {
         httpServer.shutdownNow();
     }
 
-    @Test
+    @Ignore
     public void testUsernameAlreadyExists2() {
         JSONObject obj = new JSONObject();
         obj.put("fullname", "full name");

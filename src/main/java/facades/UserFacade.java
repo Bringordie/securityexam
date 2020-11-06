@@ -181,7 +181,7 @@ public class UserFacade {
             rs.close();
             ps.close();
             //User user = em.find(User.class, userName);
-            if (checker != null) {
+            if (checker.getId() > 0) {
                 throw new AlreadyExistsException("User name already exists");
             }
             em.getTransaction().begin();

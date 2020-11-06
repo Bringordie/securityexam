@@ -49,7 +49,6 @@ public class User implements Serializable {
     @JoinTable(name = "user_roles", joinColumns = {
         @JoinColumn(name = "user_id", referencedColumnName = "user_id")}, inverseJoinColumns = {
         @JoinColumn(name = "role_name", referencedColumnName = "role_name")})
-    @ManyToOne(cascade = {CascadeType.PERSIST})
     private Role role;
     // https://docs.oracle.com/javase/10/docs/api/java/util/UUID.html
     // https://www.callicoder.com/distributed-unique-id-sequence-number-generator/

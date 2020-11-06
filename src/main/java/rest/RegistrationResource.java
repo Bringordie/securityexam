@@ -7,6 +7,11 @@ import com.google.gson.JsonParser;
 import entities.User;
 import errorhandling.AlreadyExistsException;
 import facades.UserFacade;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.UUID;
 import javax.annotation.security.RolesAllowed;
@@ -22,8 +27,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import utils.EMF_Creator;
-
 
 
 @Path("register")
@@ -38,30 +43,39 @@ public class RegistrationResource {
 
     @Context
     SecurityContext securityContext;
-    
+        
     @POST
     @Path("/user")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public String createUser(String jsonString) throws SQLException, ClassNotFoundException {
+    public String createUser(@FormDataParam("file") InputStream uploadedInputStream, @FormDataParam("fullname") String fullName, @FormDataParam("username") String userName, @FormDataParam("password") String userPass, @FormDataParam("secret") String secretAnswer) throws SQLException, ClassNotFoundException {
         String profilePicture = UUID.randomUUID().toString();
-        // ## TO DO ADD/RENAME THE PICTURE ALSO
-        // ## ALSO REMEMBER TO GIVE A TOKEN? OR LET THEM LOGIN AGAIN
-        
-        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
-        String fullName = json.get("fullname").getAsString();
-        String userName = json.get("username").getAsString();
-        String userPass = json.get("password").getAsString();
-        String secretAnswer = json.get("secretanswer").getAsString();
-
         
         try {
             User user = FACADE.createNormalUser(fullName, userName, userPass, secretAnswer, profilePicture);
+            String uploadedFileLocation = "d://uploaded/" + profilePicture+".png";
+            writeToFile(uploadedInputStream, uploadedFileLocation);
             return GSON.toJson(user);
         } catch (AlreadyExistsException ex) {
             throw new WebApplicationException(ex.getMessage(), 400);
         }
     }
+    
+    private void writeToFile(InputStream uploadedInputStream, String uploadedFileLocation) {
+        try {
+            OutputStream out = new FileOutputStream(new File(uploadedFileLocation));
+            int read = 0;
+            byte[] bytes = new byte[1024];
+            out = new FileOutputStream(new File(uploadedFileLocation));
+            while ((read = uploadedInputStream.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        }
 
     @POST
     @Path("/admin/{fullName}/{userName}/{userPass}/{secretAnswer}")
