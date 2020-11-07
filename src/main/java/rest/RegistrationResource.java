@@ -49,7 +49,7 @@ public class RegistrationResource {
     @Path("/user")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public String createUser(@FormDataParam("file") InputStream uploadedInputStream, @FormDataParam("file") final FormDataBodyPart body, @FormDataParam("fullname") String fullName, @FormDataParam("username") String userName, @FormDataParam("password") String userPass, @FormDataParam("secret") String secretAnswer) throws SQLException, ClassNotFoundException, IOException {
+    public String createUser(@FormDataParam("file") InputStream uploadedInputStream, @FormDataParam("file") FormDataBodyPart body, @FormDataParam("fullname") String fullName, @FormDataParam("username") String userName, @FormDataParam("password") String userPass, @FormDataParam("secret") String secretAnswer) throws SQLException, ClassNotFoundException, IOException {
         String profilePicture = UUID.randomUUID().toString();
 
         //Checking mimetype
