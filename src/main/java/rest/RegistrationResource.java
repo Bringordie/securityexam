@@ -27,6 +27,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
+import static org.apache.commons.io.IOUtils.toByteArray;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import utils.EMF_Creator;
@@ -55,6 +56,12 @@ public class RegistrationResource {
         String mimeType = body.getMediaType().toString();
         if (!mimeType.equals("image/png")) {
             throw new WebApplicationException("Only .png pictures are allowed to be uploaded.", 415);
+        }
+        
+        int size = toByteArray(uploadedInputStream).length;
+        int maxSize = 1048576*5; //5 MB
+        if (size > maxSize) {
+            throw new WebApplicationException("Uploaded file is too big.", 413);
         }
 
         try {
