@@ -27,9 +27,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import utils.EMF_Creator;
-
 
 @Path("register")
 public class RegistrationResource {
@@ -43,24 +43,30 @@ public class RegistrationResource {
 
     @Context
     SecurityContext securityContext;
-        
+
     @POST
     @Path("/user")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public String createUser(@FormDataParam("file") InputStream uploadedInputStream, @FormDataParam("fullname") String fullName, @FormDataParam("username") String userName, @FormDataParam("password") String userPass, @FormDataParam("secret") String secretAnswer) throws SQLException, ClassNotFoundException {
+    public String createUser(@FormDataParam("file") InputStream uploadedInputStream, @FormDataParam("file") final FormDataBodyPart body, @FormDataParam("fullname") String fullName, @FormDataParam("username") String userName, @FormDataParam("password") String userPass, @FormDataParam("secret") String secretAnswer) throws SQLException, ClassNotFoundException, IOException {
         String profilePicture = UUID.randomUUID().toString();
-        
+
+        //Checking mimetype
+        String mimeType = body.getMediaType().toString();
+        if (!mimeType.equals("image/png")) {
+            throw new WebApplicationException("Only .png pictures are allowed to be uploaded.", 415);
+        }
+
         try {
             User user = FACADE.createNormalUser(fullName, userName, userPass, secretAnswer, profilePicture);
-            String uploadedFileLocation = "d://uploaded/" + profilePicture+".png";
+            String uploadedFileLocation = "d://uploaded/" + profilePicture + ".png";
             writeToFile(uploadedInputStream, uploadedFileLocation);
             return GSON.toJson(user);
         } catch (AlreadyExistsException ex) {
             throw new WebApplicationException(ex.getMessage(), 400);
         }
     }
-    
+
     private void writeToFile(InputStream uploadedInputStream, String uploadedFileLocation) {
         try {
             OutputStream out = new FileOutputStream(new File(uploadedFileLocation));
@@ -75,7 +81,7 @@ public class RegistrationResource {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        }
+    }
 
     @POST
     @Path("/admin/{fullName}/{userName}/{userPass}/{secretAnswer}")
@@ -90,17 +96,16 @@ public class RegistrationResource {
             throw new WebApplicationException(ex.getMessage(), 400);
         }
     }
-    
 
     @PUT
     @Path("/changepw")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public String changePassword(String jsonString) {
-    JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
-    String username = json.get("username").getAsString();
-    String newPassword = json.get("newPassword").getAsString();
-    return GSON.toJson(FACADE.changeUserPW(username, newPassword).getUserName());
+        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+        String username = json.get("username").getAsString();
+        String newPassword = json.get("newPassword").getAsString();
+        return GSON.toJson(FACADE.changeUserPW(username, newPassword).getUserName());
     }
-        
+
 }
