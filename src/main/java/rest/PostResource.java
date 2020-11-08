@@ -35,6 +35,10 @@ import security.JWTAuthenticationFilter;
 import security.UserPrincipal;
 import utils.EMF_Creator;
 
+/**
+ *
+ * @author Frederik Braagaard
+ */
 @Path("post")
 public class PostResource {
 
@@ -48,6 +52,10 @@ public class PostResource {
     @Context
     SecurityContext securityContext;
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @GET
     @Path("/own")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -70,7 +78,11 @@ public class PostResource {
 
         return GSON.toJson(response);
     }
-    
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @GET
     @Path("/friends")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -87,7 +99,7 @@ public class PostResource {
         int usernameID = userPrin.getNameID();
         List<UserDTO> response;
         try {
-        response = FACADE.friendPosts(usernameID);
+            response = FACADE.friendPosts(usernameID);
         } catch (NoFriendsException ex) {
             throw new WebApplicationException("This user currently has no friends in their friendlist.", 404);
         }
@@ -95,6 +107,10 @@ public class PostResource {
         return GSON.toJson(response);
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @POST
     @Path("/create")
     @Consumes(MediaType.APPLICATION_JSON)

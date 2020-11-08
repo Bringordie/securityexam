@@ -22,7 +22,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 /**
  *
- * @author Frederik
+ * @author Frederik Braagaard
  */
 @Entity
 @NamedQuery(name = "User.deleteAllRows", query = "DELETE from User")

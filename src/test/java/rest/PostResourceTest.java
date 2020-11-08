@@ -34,6 +34,10 @@ import static rest.LoginEndpointTest.startServer;
 import utils.EMF_Creator;
 import static rest.LoginEndpointTest.loginUser;
 
+/**
+ *
+ * @author Frederik Braagaard
+ */
 public class PostResourceTest {
 
     private static final int SERVER_PORT = 7777;
@@ -56,6 +60,10 @@ public class PostResourceTest {
         return GrizzlyHttpServerFactory.createHttpServer(BASE_URI, rc);
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @BeforeAll
     public static void setUpClass() {
         //This method must be called before you request the EntityManagerFactory
@@ -70,6 +78,10 @@ public class PostResourceTest {
         RestAssured.defaultParser = Parser.JSON;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @BeforeEach
     public void setUp() {
         EntityManager em = emf.createEntityManager();
@@ -87,7 +99,7 @@ public class PostResourceTest {
             em.persist(r1);
             em.persist(r2);
             em.getTransaction().commit();
-            
+
             em.getTransaction().begin();
             u1 = new User("User user", "user", "test", "where I was born", UUID.randomUUID().toString());
             u1.addRole(r1);
@@ -140,6 +152,10 @@ public class PostResourceTest {
         httpServer.shutdownNow();
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void successfullCreatePostTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
@@ -159,6 +175,10 @@ public class PostResourceTest {
                 .statusCode(HttpStatus.OK_200.getStatusCode());
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void failCreatePostTestNoValidToken() {
         //Creating a JSON Object
@@ -174,6 +194,10 @@ public class PostResourceTest {
                 .statusCode(HttpStatus.UNAUTHORIZED_401.getStatusCode());
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void successGetPostTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
@@ -194,6 +218,10 @@ public class PostResourceTest {
         assertEquals(1, result.length);
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void failGetPostTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
@@ -208,6 +236,10 @@ public class PostResourceTest {
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void getFriendsPostsPass() {
         LoginEndpointTest getToken = new LoginEndpointTest();
@@ -222,6 +254,10 @@ public class PostResourceTest {
                 .statusCode(HttpStatus.OK_200.getStatusCode());
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void getFriendsPostsFailNoFriends() {
         LoginEndpointTest getToken = new LoginEndpointTest();

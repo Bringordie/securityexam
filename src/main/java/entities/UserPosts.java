@@ -13,7 +13,7 @@ import javax.persistence.Temporal;
 
 /**
  *
- * @author Frederik
+ * @author Frederik Braagaard
  */
 @Entity
 @NamedQuery(name = "UserPosts.deleteAllRows", query = "DELETE from UserPosts")

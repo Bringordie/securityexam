@@ -36,6 +36,10 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.WebApplicationException;
 import utils.EMF_Creator;
 
+/**
+ *
+ * @author Frederik Braagaard
+ */
 @Path("login")
 public class LoginEndpoint {
 
@@ -44,6 +48,10 @@ public class LoginEndpoint {
     public static final UserFacade USER_FACADE = UserFacade.getUserFacade(EMF);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -67,6 +75,10 @@ public class LoginEndpoint {
         }
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @PUT
     @Path("/reset/password")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -87,6 +99,10 @@ public class LoginEndpoint {
         return GSON.toJson("Password has been resat for user.");
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     private String createToken(String userName, int userNameID, Role role) throws JOSEException {
 
         String issuer = "semesterstartcode-dat3";
@@ -107,7 +123,11 @@ public class LoginEndpoint {
         signedJWT.sign(signer);
         return signedJWT.serialize();
     }
-    
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @POST
     @Path("/admin")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -116,13 +136,12 @@ public class LoginEndpoint {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         String username = json.get("username").getAsString();
         String password = json.get("password").getAsString();
-        
+
         //Uncomment and fix tests ones this has been decided.
 //        String ipaddress = json.get("ipaddress").getAsString();
 //        if (!ipaddress.equals("127.0.0.1")) {
 //            throw new WebApplicationException("Forbidden. Request made to login outside workplace.", 403);
 //        }
-        
         int usernameID;
 
         try {
@@ -138,9 +157,8 @@ public class LoginEndpoint {
                 throw new WebApplicationException("Forbidden. Request made to login outside workplace.", 401);
             }
             Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
-        } 
+        }
         throw new AuthenticationException("Invalid username or password! Please try again");
     }
-
 
 }

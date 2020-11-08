@@ -3,6 +3,10 @@ package dtos.user;
 import entities.*;
 import java.util.Date;
 
+/**
+ *
+ * @author Frederik Braagaard
+ */
 public class UserPostsDTO {
 
     private String message;

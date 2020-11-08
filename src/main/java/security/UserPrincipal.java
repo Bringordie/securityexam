@@ -1,12 +1,12 @@
 package security;
 
-import entities.Role;
 import entities.User;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
+/**
+ *
+ * @author Frederik Braagaard
+ */
 public class UserPrincipal implements Principal {
 
   private String username;

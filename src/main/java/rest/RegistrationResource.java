@@ -32,6 +32,10 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import utils.EMF_Creator;
 
+/**
+ *
+ * @author Frederik Braagaard
+ */
 @Path("register")
 public class RegistrationResource {
 
@@ -45,6 +49,10 @@ public class RegistrationResource {
     @Context
     SecurityContext securityContext;
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @POST
     @Path("/user")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -57,9 +65,9 @@ public class RegistrationResource {
         if (!mimeType.equals("image/png")) {
             throw new WebApplicationException("Only .png pictures are allowed to be uploaded.", 415);
         }
-        
+
         int size = toByteArray(uploadedInputStream).length;
-        int maxSize = 1048576*5; //5 MB
+        int maxSize = 1048576 * 5; //5 MB
         if (size > maxSize) {
             throw new WebApplicationException("Uploaded file is too big.", 413);
         }
@@ -90,6 +98,10 @@ public class RegistrationResource {
         }
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @POST
     @Path("/admin/{fullName}/{userName}/{userPass}/{secretAnswer}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -104,6 +116,10 @@ public class RegistrationResource {
         }
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @PUT
     @Path("/changepw")
     @Produces(MediaType.APPLICATION_JSON)

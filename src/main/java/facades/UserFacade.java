@@ -23,17 +23,29 @@ import java.util.UUID;
 import utils.EMF_Creator;
 import utils.EMF_Creator.DbSelector;
 
+/**
+ *
+ * @author Frederik Braagaard
+ */
 public class UserFacade {
 
     private static EntityManagerFactory emf;
     private static UserFacade instance;
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public static Boolean serverStatus = true;
     private static Connection connection;
 
     private UserFacade() {
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public static Connection createConnection() throws SQLException, ClassNotFoundException {
         DbSelector connectionStatus;
         if (serverStatus == true) {
@@ -66,6 +78,7 @@ public class UserFacade {
      * @param password
      * @return User The verified user.
      * @throws AuthenticationException
+     * @author Frederik Braagaard
      */
     public User getVeryfiedUser(String username, String password) throws AuthenticationException, SQLException, ClassNotFoundException {
         EntityManager em = emf.createEntityManager();
@@ -88,14 +101,18 @@ public class UserFacade {
             if (user == null || !user.verifyPassword(password)) {
                 throw new AuthenticationException("Invalid user name or password");
             }
-        } catch(NullPointerException ex) {
+        } catch (NullPointerException ex) {
             throw new AuthenticationException("Invalid user name or password");
-        }finally {
+        } finally {
             em.close();
         }
         return user;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public User getVeryfiedAdmin(String username, String password) throws AuthenticationException, SQLException, ClassNotFoundException {
         EntityManager em = emf.createEntityManager();
         User user = new User();
@@ -118,13 +135,17 @@ public class UserFacade {
                 throw new AuthenticationException("Invalid user name or password");
             }
         } catch (NullPointerException ex) {
-           throw new AuthenticationException("Invalid user name or password");
+            throw new AuthenticationException("Invalid user name or password");
         } finally {
             em.close();
         }
         return user;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public User userResetPassword(String username, String secret, String newPassword) throws AuthenticationException, SQLException, ClassNotFoundException {
         EntityManager em = emf.createEntityManager();
         User user = new User();
@@ -163,6 +184,10 @@ public class UserFacade {
         return user;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public User createNormalUser(String fullName, String userName, String userPass, String secretAnswer, String profilePicture) throws AlreadyExistsException, SQLException, ClassNotFoundException {
         EntityManager em = emf.createEntityManager();
         User userregister = new User(fullName, userName, userPass, secretAnswer, profilePicture);
@@ -193,6 +218,10 @@ public class UserFacade {
         return userregister;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     //WILL NOT WORK YET
     public User adminCreateUser(String fullName, String userName, String userPass, String secretAnswer, String profilePicture) throws AlreadyExistsException {
         EntityManager em = emf.createEntityManager();
@@ -219,6 +248,7 @@ public class UserFacade {
      * @param username
      * @param newPassword
      * @return User This returns the User that had his pw changed.
+     * @author Frederik Braagaard
      */
     public User changeUserPW(String username, String newPassword) {
         EntityManager em = emf.createEntityManager();
@@ -235,6 +265,10 @@ public class UserFacade {
         return user;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public boolean createPost(int usernameID, String userPost) {
         EntityManager em = emf.createEntityManager();
         User user;
@@ -254,6 +288,10 @@ public class UserFacade {
         return true;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public List<UserPosts> getPosts(int usernameID) throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         User user;
@@ -270,6 +308,10 @@ public class UserFacade {
         return post;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public User addFriendRequest(int requestReceiverUsernameID, int requestMadeByUsernameID) throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         User user, requester;
@@ -292,6 +334,10 @@ public class UserFacade {
         return user;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public User acceptFriendRequest(int usernameID, int request_usernameID) throws NotFoundException, AuthenticationException {
         EntityManager em = emf.createEntityManager();
         User user;
@@ -328,6 +374,10 @@ public class UserFacade {
         return user;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public User removeFriend(int userRequesterID, int userFriendID) throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         User user, requester;
@@ -353,6 +403,10 @@ public class UserFacade {
         return user;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public User removeFriendRequest(int userRequesterID, int userMadeRequestID) throws NotFoundException {
         EntityManager em = emf.createEntityManager();
         User user;
@@ -377,6 +431,10 @@ public class UserFacade {
         return user;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public List<UserDTO> friendSearch(String name) throws NotFoundException, SQLException, ClassNotFoundException {
         List<UserDTO> userDTOList = new ArrayList();
         String query = "SELECT full_name, profile_picture, user_id FROM users WHERE full_name LIKE ?";
@@ -403,6 +461,10 @@ public class UserFacade {
         return userDTOList;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public List<UserDTO> friendPosts(int userRequesterID) throws NotFoundException, NoFriendsException {
         EntityManager em = emf.createEntityManager();
         User user, userFriend;

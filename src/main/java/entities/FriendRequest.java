@@ -14,7 +14,7 @@ import javax.persistence.Table;
 
 /**
  *
- * @author Frederik
+ * @author Frederik Braagaard
  */
 @Entity
 @NamedQuery(name = "FriendRequest.deleteAllRows", query = "DELETE from FriendRequest")

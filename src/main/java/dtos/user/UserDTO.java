@@ -4,6 +4,10 @@ import entities.User;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ * @author Frederik Braagaard
+ */
 public class UserDTO {
 
     String fullName;

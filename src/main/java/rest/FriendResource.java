@@ -33,6 +33,10 @@ import security.JWTAuthenticationFilter;
 import security.UserPrincipal;
 import utils.EMF_Creator;
 
+/**
+ *
+ * @author Frederik Braagaard
+ */
 @Path("friend")
 public class FriendResource {
 
@@ -46,6 +50,10 @@ public class FriendResource {
     @Context
     SecurityContext securityContext;
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @POST
     @Path("/add")
     @Produces(MediaType.APPLICATION_JSON)
@@ -59,7 +67,7 @@ public class FriendResource {
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
-        
+
         int usernameID = userPrin.getNameID();
         int requestMadeByUsernameID = json.get("request_username").getAsInt();
         User user;
@@ -68,10 +76,14 @@ public class FriendResource {
         } catch (NotFoundException ex) {
             throw new WebApplicationException("The requested friend could not be found", 404);
         }
-        
+
         return GSON.toJson("Friend request has been sent");
     }
-    
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @POST
     @Path("/accept")
     @Produces(MediaType.APPLICATION_JSON)
@@ -85,7 +97,7 @@ public class FriendResource {
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
-        
+
         int usernameID = userPrin.getNameID();
         int request_usernameID = json.get("request_usernameID").getAsInt();
         User user;
@@ -96,10 +108,14 @@ public class FriendResource {
         } catch (AuthenticationException ex) {
             throw new WebApplicationException("Something unexpected went wrong. This request has been logged for further investigation", 400);
         }
-        
+
         return GSON.toJson("Friend request has been accepted");
     }
-    
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @POST
     @Path("/remove")
     @Produces(MediaType.APPLICATION_JSON)
@@ -113,7 +129,7 @@ public class FriendResource {
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
-        
+
         int usernameID = userPrin.getNameID();
         int request_usernameID = json.get("request_username").getAsInt();
         User user;
@@ -121,11 +137,15 @@ public class FriendResource {
             user = FACADE.removeFriend(usernameID, request_usernameID);
         } catch (NotFoundException ex) {
             throw new WebApplicationException("The requested friend could not be found", 404);
-        } 
-        
+        }
+
         return GSON.toJson("Friend has been removed");
     }
-    
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @POST
     @Path("/remove/friendrequest")
     @Produces(MediaType.APPLICATION_JSON)
@@ -139,7 +159,7 @@ public class FriendResource {
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
-        
+
         int username = userPrin.getNameID();
         int request_username = json.get("request_username").getAsInt();
         User user;
@@ -147,11 +167,15 @@ public class FriendResource {
             user = FACADE.removeFriendRequest(username, request_username);
         } catch (NotFoundException ex) {
             throw new WebApplicationException("The requested friend request could not be found", 404);
-        } 
-        
+        }
+
         return GSON.toJson("Friend Request has been removed");
     }
-    
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @POST
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
@@ -165,7 +189,7 @@ public class FriendResource {
         } catch (JOSEException | AuthenticationException ex) {
             throw new WebApplicationException(ex.getMessage(), 401);
         }
-        
+
         String searchName = json.get("search_name").getAsString();
         List<UserDTO> dtoList;
         try {
@@ -173,7 +197,7 @@ public class FriendResource {
         } catch (NotFoundException ex) {
             throw new WebApplicationException("No users could be found by this search", 404);
         }
-        
+
         return GSON.toJson(dtoList);
     }
 

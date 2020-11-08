@@ -26,6 +26,10 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+/**
+ *
+ * @author Frederik Braagaard
+ */
 public class UserFacadeTest {
 
     private static EntityManagerFactory emf;
@@ -41,6 +45,10 @@ public class UserFacadeTest {
     public UserFacadeTest() {
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @BeforeAll
     public static void setUpClass() {
         emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.TEST, EMF_Creator.Strategy.DROP_AND_CREATE);
@@ -52,6 +60,10 @@ public class UserFacadeTest {
     public static void tearDownClass() {
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @BeforeEach
     public void setUp() {
         em = emf.createEntityManager();
@@ -69,7 +81,7 @@ public class UserFacadeTest {
             em.persist(r1);
             em.persist(r2);
             em.getTransaction().commit();
-            
+
             em.getTransaction().begin();
             u1 = new User("User user", "user", "password", "where I was born", UUID.randomUUID().toString());
             u1.addRole(r1);
@@ -119,6 +131,8 @@ public class UserFacadeTest {
 
     /**
      * Test of addPost method, of class UserFacade pass.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void testAddPostPass() throws Exception {
@@ -129,6 +143,8 @@ public class UserFacadeTest {
 
     /**
      * Test of addPost method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void testAddPostFail() throws Exception {
@@ -139,6 +155,8 @@ public class UserFacadeTest {
 
     /**
      * Test of getPosts method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void testGetPostsSuccess() throws NotFoundException {
@@ -149,6 +167,8 @@ public class UserFacadeTest {
 
     /**
      * Test of getPosts method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void testGetPostsFail() throws NotFoundException {
@@ -163,6 +183,8 @@ public class UserFacadeTest {
 
     /**
      * Test of getUserResetPassword method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void userResetPasswordPass() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
@@ -172,6 +194,8 @@ public class UserFacadeTest {
 
     /**
      * Test of getUserResetPassword method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void userResetPasswordFail() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
@@ -186,6 +210,8 @@ public class UserFacadeTest {
 
     /**
      * Test of getUserResetPassword method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void userResetPasswordFail2() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
@@ -200,6 +226,8 @@ public class UserFacadeTest {
 
     /**
      * Test of addFriendRequest method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void userAddFriendRequestPass() throws NotFoundException, AuthenticationException {
@@ -217,6 +245,8 @@ public class UserFacadeTest {
 
     /**
      * Test of addFriendRequest method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void userAddFriendRequestFail() throws NotFoundException {
@@ -231,6 +261,8 @@ public class UserFacadeTest {
 
     /**
      * Test of acceptFriendRequest method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void acceptFriendRequestPass() throws NotFoundException, AuthenticationException {
@@ -254,6 +286,8 @@ public class UserFacadeTest {
 
     /**
      * Test of acceptFriendRequest method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void acceptFriendRequestFail() throws NotFoundException, AuthenticationException {
@@ -268,6 +302,8 @@ public class UserFacadeTest {
 
     /**
      * Test of removeFriend method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void removeFriendPass() throws NotFoundException, AuthenticationException {
@@ -288,6 +324,8 @@ public class UserFacadeTest {
 
     /**
      * Test of removeFriend method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void removeFriendFail() throws NotFoundException, AuthenticationException {
@@ -302,6 +340,8 @@ public class UserFacadeTest {
 
     /**
      * Test of removeFriendRequest method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void removeFriendRequestPass() throws NotFoundException, AuthenticationException {
@@ -322,6 +362,8 @@ public class UserFacadeTest {
 
     /**
      * Test of removeFriendRequest method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void removeFriendRequestFail() throws NotFoundException, AuthenticationException {
@@ -336,6 +378,8 @@ public class UserFacadeTest {
 
     /**
      * Test of friendSearch method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void findFriendPass() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
@@ -352,6 +396,8 @@ public class UserFacadeTest {
 
     /**
      * Test of friendSearch method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void findFriendFail() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
@@ -366,6 +412,8 @@ public class UserFacadeTest {
 
     /**
      * Test of friendPosts method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void friendPostsPass() throws NotFoundException, NoFriendsException {
@@ -382,6 +430,8 @@ public class UserFacadeTest {
 
     /**
      * Test of friendPosts method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void friendPostsFail() throws NotFoundException, NoFriendsException {
@@ -396,6 +446,8 @@ public class UserFacadeTest {
 
     /**
      * Test of getVeryfiedAdmin method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void getVeryfiedAdminPass() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
@@ -406,6 +458,8 @@ public class UserFacadeTest {
 
     /**
      * Test of getVeryfiedAdmin method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void getVeryfiedAdminFail() throws NotFoundException, NoFriendsException, SQLException, ClassNotFoundException {
@@ -417,9 +471,11 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
-    
+
     /**
      * Test of getVeryfiedAdmin method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
      */
     @Test
     public void getVeryfiedAdminFailVerify() throws NotFoundException, NoFriendsException, SQLException, ClassNotFoundException {

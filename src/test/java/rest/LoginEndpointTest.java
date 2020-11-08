@@ -31,7 +31,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import utils.EMF_Creator;
 
-//@Disabled
+/**
+ *
+ * @author Frederik Braagaard
+ */
 public class LoginEndpointTest {
 
     private static final int SERVER_PORT = 7777;
@@ -54,6 +57,10 @@ public class LoginEndpointTest {
         return GrizzlyHttpServerFactory.createHttpServer(BASE_URI, rc);
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @BeforeAll
     public static void setUpClass() {
         //This method must be called before you request the EntityManagerFactory
@@ -76,8 +83,10 @@ public class LoginEndpointTest {
         httpServer.shutdownNow();
     }
 
-    // Setup the DataBase (used by the test-server and this test) in a known state BEFORE EACH TEST
-    //TODO -- Make sure to change the EntityClass used below to use YOUR OWN (renamed) Entity class
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @BeforeEach
     public void setUp() {
         EntityManager em = emf.createEntityManager();
@@ -96,7 +105,7 @@ public class LoginEndpointTest {
             em.persist(r1);
             em.persist(r2);
             em.getTransaction().commit();
-            
+
             em.getTransaction().begin();
             u1 = new User("User user", "user", "test", "where I was born", UUID.randomUUID().toString());
             u1.addRole(r1);
@@ -148,6 +157,10 @@ public class LoginEndpointTest {
     public static String securityToken;
 
     //Utility method to login and set the returned securityToken
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     public static void loginUser(String username, String password) {
         JSONObject json = new JSONObject();
         json.put("username", username);
@@ -160,7 +173,13 @@ public class LoginEndpointTest {
                 .extract().path("token");
         System.out.println("TOKEN ---> " + securityToken);
     }
-    
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
+    //Some logic still needs to be implemented
+    @Ignore
     public static void loginAdmin(String username, String password) {
         JSONObject json = new JSONObject();
         json.put("username", username);
@@ -178,6 +197,10 @@ public class LoginEndpointTest {
         securityToken = null;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void userNotAuthenticatedTest() {
         System.out.println("Testing is server UP");
@@ -190,6 +213,10 @@ public class LoginEndpointTest {
                 .then().statusCode(401);
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void successfullLoginTest() {
         System.out.println("Testing is server UP");
@@ -209,6 +236,10 @@ public class LoginEndpointTest {
         System.out.println("The token is NOT NULL and it is: " + securityToken);
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void resetPasswordPass() {
 
@@ -225,6 +256,10 @@ public class LoginEndpointTest {
                 .statusCode(HttpStatus.OK_200.getStatusCode());
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void resetPasswordFail() {
         JSONObject obj = new JSONObject();
@@ -239,7 +274,11 @@ public class LoginEndpointTest {
                 .assertThat()
                 .statusCode(HttpStatus.UNAUTHORIZED_401.getStatusCode());
     }
-    
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void resetPasswordFailAdmin() {
         JSONObject obj = new JSONObject();

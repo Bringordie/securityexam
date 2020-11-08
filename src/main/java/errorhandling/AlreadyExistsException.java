@@ -2,7 +2,7 @@ package errorhandling;
 
 /**
  *
- * @author lam@cphbusiness.dk
+ * @author Frederik Braagaard
  */
 public class AlreadyExistsException extends Exception{
 

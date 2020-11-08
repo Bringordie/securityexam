@@ -36,6 +36,10 @@ import static rest.LoginEndpointTest.startServer;
 import utils.EMF_Creator;
 import static rest.LoginEndpointTest.loginUser;
 
+/**
+ *
+ * @author Frederik Braagaard
+ */
 public class FriendResourceTest {
 
     private static final int SERVER_PORT = 7777;
@@ -59,6 +63,10 @@ public class FriendResourceTest {
         return GrizzlyHttpServerFactory.createHttpServer(BASE_URI, rc);
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @BeforeAll
     public static void setUpClass() {
         //This method must be called before you request the EntityManagerFactory
@@ -73,6 +81,10 @@ public class FriendResourceTest {
         RestAssured.defaultParser = Parser.JSON;
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @BeforeEach
     public void setUp() {
         EntityManager em = emf.createEntityManager();
@@ -90,7 +102,7 @@ public class FriendResourceTest {
             em.persist(r1);
             em.persist(r2);
             em.getTransaction().commit();
-            
+
             em.getTransaction().begin();
             u1 = new User("User user", "user", "test", "where I was born", UUID.randomUUID().toString());
             u1.addRole(r1);
@@ -101,9 +113,8 @@ public class FriendResourceTest {
             u4 = new User("Admin admin", "admin", "test", "where I went to school", UUID.randomUUID().toString());
             u4.addRole(r2);
 
-
             em.getTransaction().commit();
-            
+
             em.getTransaction().begin();
             em.persist(u1);
             em.persist(u2);
@@ -124,7 +135,6 @@ public class FriendResourceTest {
 //
 //            u1.addToFriendList(f1);
 //            u2.addToFriendList(f2);
-
             fr1 = new FriendRequest(u2.getId(), u2.getFullName(), u2.getProfilePicture());
             fr2 = new FriendRequest(u1.getId(), u1.getFullName(), u1.getProfilePicture());
 
@@ -149,6 +159,10 @@ public class FriendResourceTest {
         httpServer.shutdownNow();
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void successMakeFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
@@ -173,6 +187,10 @@ public class FriendResourceTest {
         assertEquals("Friend request has been sent", response);
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void failMakeFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
@@ -192,6 +210,10 @@ public class FriendResourceTest {
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void successAcceptFriendRequest() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
@@ -209,6 +231,7 @@ public class FriendResourceTest {
         json.put("request_usernameID", u2.getId());
         //ADD ONCE FINISHED
         //json.put("ipaddress", "127.0.0.1");
+        //New comment. This should be on the login test not here
 
         String response = with()
                 .contentType("application/json")
@@ -228,6 +251,10 @@ public class FriendResourceTest {
         em.close();
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void failAcceptFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
@@ -247,7 +274,11 @@ public class FriendResourceTest {
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
 
     }
-    
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void hardFailAcceptFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
@@ -267,7 +298,11 @@ public class FriendResourceTest {
                 .statusCode(HttpStatus.BAD_REQUEST_400.getStatusCode());
 
     }
-    
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void successRemoveFriendRequest() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
@@ -302,6 +337,10 @@ public class FriendResourceTest {
         em.close();
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void failRemoveFriendRequest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
@@ -320,7 +359,11 @@ public class FriendResourceTest {
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
     }
-    
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void successFriendSearch() throws NotFoundException {
         EntityManager em = emf.createEntityManager();
@@ -347,6 +390,10 @@ public class FriendResourceTest {
         assertEquals(1, response.length);
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
     @Test
     public void failFriendSearch() {
         LoginEndpointTest getToken = new LoginEndpointTest();
