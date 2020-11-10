@@ -119,16 +119,17 @@ public class RegistrationResource {
     /**
      *
      * @author Frederik Braagaard
+     * See LoginEndpoint
      */
-    @PUT
-    @Path("/changepw")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public String changePassword(String jsonString) {
-        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
-        String username = json.get("username").getAsString();
-        String newPassword = json.get("newPassword").getAsString();
-        return GSON.toJson(FACADE.changeUserPW(username, newPassword).getUserName());
-    }
+//    @PUT
+//    @Path("/changepw")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    public String changePassword(String jsonString) {
+//        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+//        String username = json.get("username").getAsString();
+//        String newPassword = json.get("newPassword").getAsString();
+//        return GSON.toJson(FACADE.changeUserPW(username, newPassword).getUserName());
+//    }
 
 }

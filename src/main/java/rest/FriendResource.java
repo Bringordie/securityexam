@@ -5,10 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.nimbusds.jose.JOSEException;
+import dtos.user.FriendsDTO;
 import dtos.user.UserDTO;
 import entities.User;
 import errorhandling.AlreadyExistsException;
 import errorhandling.AuthenticationException;
+import errorhandling.NoFriendsException;
 import errorhandling.NotFoundException;
 import facades.UserFacade;
 import java.sql.SQLException;
@@ -18,6 +20,7 @@ import java.util.UUID;
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
@@ -79,6 +82,35 @@ public class FriendResource {
 
         return GSON.toJson("Friend request has been sent");
     }
+    
+    /**
+     *
+     * @author Frederik Braagaard
+     */
+    @GET
+    @Path("/friends")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String getFriends(@HeaderParam("x-access-token") String accessToken) throws NotFoundException, ParseException, NoFriendsException {
+        JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
+        UserPrincipal userPrin;
+        try {
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(accessToken);
+        } catch (JOSEException | AuthenticationException ex) {
+            throw new WebApplicationException(ex.getMessage(), 401);
+        }
+
+        int usernameID = userPrin.getNameID();
+        List<FriendsDTO> friends;
+        try {
+            friends = FACADE.viewFriends(usernameID);
+        } catch (NotFoundException ex) {
+            throw new WebApplicationException("Something unexpected went wrong", 500);
+        } catch (NoFriendsException ex) {
+            throw new WebApplicationException("The requested friend could not be found", 404);
+        }
+
+        return GSON.toJson(friends);
+    }
 
     /**
      *
@@ -131,7 +163,7 @@ public class FriendResource {
         }
 
         int usernameID = userPrin.getNameID();
-        int request_usernameID = json.get("request_username").getAsInt();
+        int request_usernameID = json.get("request_userid").getAsInt();
         User user;
         try {
             user = FACADE.removeFriend(usernameID, request_usernameID);
@@ -161,7 +193,7 @@ public class FriendResource {
         }
 
         int username = userPrin.getNameID();
-        int request_username = json.get("request_username").getAsInt();
+        int request_username = json.get("request_userid").getAsInt();
         User user;
         try {
             user = FACADE.removeFriendRequest(username, request_username);

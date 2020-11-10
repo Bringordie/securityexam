@@ -58,7 +58,7 @@ public class PostResource {
      */
     @GET
     @Path("/own")
-    @Consumes(MediaType.APPLICATION_JSON)
+    //@Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String getPosts(@HeaderParam("x-access-token") String accessToken) throws ParseException, JOSEException, AuthenticationException, NotFoundException {
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();

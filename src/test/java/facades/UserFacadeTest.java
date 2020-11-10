@@ -1,5 +1,6 @@
 package facades;
 
+import dtos.user.FriendsDTO;
 import dtos.user.UserDTO;
 import entities.FriendRequest;
 import entities.Friends;
@@ -484,6 +485,36 @@ public class UserFacadeTest {
             fail("Should fail");
         } catch (AuthenticationException ex) {
             final String msg = "Invalid user name or password";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
+    
+    /**
+     * Test of viewFriends method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void viewFriendsPass() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException, NoFriendsException {
+        facade.addFriendRequest(u2.getId(), u3.getId());
+        facade.acceptFriendRequest(u2.getId(), u3.getId());
+        List<FriendsDTO> response = facade.viewFriends(u2.getId());
+        assertNotNull(response);
+        assertEquals(1, response.size());
+    }
+
+    /**
+     * Test of viewFriends method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void viewFriendsFail() throws NotFoundException, NoFriendsException, SQLException, ClassNotFoundException {
+        try {
+            List<FriendsDTO> response = facade.viewFriends(u3.getId());
+            fail("Should fail");
+        } catch (NoFriendsException ex) {
+            final String msg = "This user currently has no friends in their friendlist.";
             assertEquals(msg, ex.getMessage());
         }
     }

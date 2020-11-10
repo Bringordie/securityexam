@@ -2,12 +2,14 @@ package rest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dtos.user.FriendsDTO;
 import dtos.user.UserDTO;
 import entities.FriendRequest;
 import entities.Friends;
 import entities.Role;
 import entities.User;
 import entities.UserPosts;
+import errorhandling.AuthenticationException;
 import errorhandling.NotFoundException;
 import facades.UserFacade;
 import io.restassured.RestAssured;
@@ -316,7 +318,7 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject json = new JSONObject();
-        json.put("request_username", u2.getId());
+        json.put("request_userid", u2.getId());
         //ADD ONCE FINISHED
         //json.put("ipaddress", "127.0.0.1");
 
@@ -349,7 +351,7 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("request_username", 404);
+        obj.put("request_userid", 404);
 
         with()
                 .contentType("application/json")
@@ -412,4 +414,82 @@ public class FriendResourceTest {
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
     }
+    
+    /**
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void successViewFriends() throws NotFoundException, AuthenticationException {
+        EntityManager em = emf.createEntityManager();
+        facade.addFriendRequest(u2.getId(), u3.getId());
+        facade.acceptFriendRequest(u2.getId(), u3.getId());
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.loginUser(u2.getUserName(), "test");
+        String token = getToken.securityToken;
+
+
+        FriendsDTO[] response = with()
+                .contentType("application/json")
+                .header("x-access-token", token)
+                .when().request("GET", "/friend/friends").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .extract()
+                .as(FriendsDTO[].class); //extract result JSON as object
+
+        assertNotNull(response);
+        assertEquals(u3.getFullName(), response[0].getFullName());
+        assertEquals(1, response.length);
+    }
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void failViewFriends() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.loginUser(u2.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        with()
+                .contentType("application/json")
+                .header("x-access-token", token)
+                .when().request("GET", "/friend/friends").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
+    }
+    
+    /**
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void successRemoveFriend() throws NotFoundException, AuthenticationException {
+        EntityManager em = emf.createEntityManager();
+        facade.addFriendRequest(u2.getId(), u3.getId());
+        facade.acceptFriendRequest(u2.getId(), u3.getId());
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.loginUser(u2.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        JSONObject json = new JSONObject();
+        json.put("request_userid", u2.getId());
+
+        String response = with()
+                .contentType("application/json")
+                .header("x-access-token", token)
+                .body(json)
+                .when().request("POST", "/friend/remove").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .extract()
+                .as(String.class); //extract result JSON as object
+
+        assertNotNull(response);
+        assertEquals("Friend has been removed", response);
+    }
+
+
 }

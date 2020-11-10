@@ -1,5 +1,6 @@
 package facades;
 
+import dtos.user.FriendsDTO;
 import dtos.user.UserDTO;
 import dtos.user.UserPostsDTO;
 import entities.FriendRequest;
@@ -492,4 +493,27 @@ public class UserFacade {
         return friendPosts;
     }
 
+    public List<FriendsDTO> viewFriends(int usernameID) throws NotFoundException, NoFriendsException {
+        EntityManager em = emf.createEntityManager();
+        User user, userFriend;
+        List<FriendsDTO> friends = new ArrayList();
+        try {
+            em.getTransaction().begin();
+            user = em.find(User.class, usernameID);
+            if (user.getFriendList().isEmpty()) {
+                throw new NoFriendsException("This user currently has no friends in their friendlist.");
+            }
+            for (Friends friend : user.getFriendList()) {
+                userFriend = em.find(User.class, friend.getFriendUsernameID());
+                FriendsDTO friendFromList = new FriendsDTO(userFriend);
+                friends.add(friendFromList);
+            }
+        } catch (NullPointerException ex) {
+            throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
+        } finally {
+            em.close();
+        }
+        return friends;
+    }
+    
 }
