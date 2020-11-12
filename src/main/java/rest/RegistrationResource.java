@@ -31,6 +31,8 @@ import static org.apache.commons.io.IOUtils.toByteArray;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import utils.EMF_Creator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -42,6 +44,9 @@ public class RegistrationResource {
     private static EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.DEV, EMF_Creator.Strategy.CREATE);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final UserFacade FACADE = UserFacade.getUserFacade(EMF);
+    private static final String PASSWORD_PATTERN =
+            "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,}$";
+    private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
 
     @Context
     private UriInfo context;
@@ -58,6 +63,11 @@ public class RegistrationResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public String createUser(@FormDataParam("file") InputStream uploadedInputStream, @FormDataParam("file") FormDataBodyPart body, @FormDataParam("fullname") String fullName, @FormDataParam("username") String userName, @FormDataParam("password") String userPass, @FormDataParam("secret") String secretAnswer) throws SQLException, ClassNotFoundException, IOException {
+        Boolean isValid = isValid(userPass);
+        if (!isValid) {
+            throw new WebApplicationException("Password does not accord with the password policies.", 422);
+        }
+        
         String profilePicture = UUID.randomUUID().toString();
 
         //Checking mimetype
@@ -114,6 +124,11 @@ public class RegistrationResource {
         } catch (AlreadyExistsException ex) {
             throw new WebApplicationException(ex.getMessage(), 400);
         }
+    }
+    
+    public static boolean isValid(final String password) {
+        Matcher matcher = pattern.matcher(password);
+        return matcher.matches();
     }
 
     /**

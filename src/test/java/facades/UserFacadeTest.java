@@ -518,5 +518,19 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
+    
+    /**
+     * Test of viewFriends method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void adminGetUsers() throws NotFoundException, SQLException, ClassNotFoundException {
+        List<UserDTO> response = facade.adminGetUsers();
+        assertNotNull(response);
+        assertEquals(4, response.size());
+    }
+
+
 
 }

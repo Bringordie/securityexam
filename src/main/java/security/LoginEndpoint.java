@@ -147,6 +147,7 @@ public class LoginEndpoint {
         try {
             User user = USER_FACADE.getVeryfiedAdmin(username, password);
             usernameID = user.getId();
+                        
             String token = createToken(username, usernameID, user.getRole());
             JsonObject responseJson = new JsonObject();
             responseJson.addProperty("token", token);
@@ -154,10 +155,10 @@ public class LoginEndpoint {
 
         } catch (JOSEException | AuthenticationException ex) {
             if (ex instanceof AuthenticationException) {
-                throw new WebApplicationException("Forbidden. Request made to login outside workplace.", 401);
+                throw new WebApplicationException("Forbidden request", 401);
             }
             Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        } 
         throw new AuthenticationException("Invalid username or password! Please try again");
     }
 

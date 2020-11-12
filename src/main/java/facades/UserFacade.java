@@ -515,5 +515,26 @@ public class UserFacade {
         }
         return friends;
     }
-    
+
+    public List<UserDTO> adminGetUsers() throws SQLException, ClassNotFoundException {
+        List<UserDTO> userDTOList = new ArrayList();
+        String query = "SELECT full_name, profile_picture, user_id FROM users";
+        try {
+            PreparedStatement ps = createConnection().prepareStatement(query);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                UserDTO dto = new UserDTO();
+                dto.setFullName(rs.getString("full_name"));
+                dto.setProfilePicture(rs.getString("profile_picture"));
+                dto.setUserID(rs.getInt("user_id"));
+                userDTOList.add(dto);
+            }
+            rs.close();
+            ps.close();
+        } catch (NullPointerException ex) {
+            throw new NullPointerException("No results by this name was found");
+        }
+        return userDTOList;
+    }    
 }
