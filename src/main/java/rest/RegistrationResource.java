@@ -64,9 +64,9 @@ public class RegistrationResource {
     @Produces(MediaType.APPLICATION_JSON)
     public String createUser(@FormDataParam("file") InputStream uploadedInputStream, @FormDataParam("file") FormDataBodyPart body, @FormDataParam("fullname") String fullName, @FormDataParam("username") String userName, @FormDataParam("password") String userPass, @FormDataParam("secret") String secretAnswer) throws SQLException, ClassNotFoundException, IOException {
         Boolean isValid = isValid(userPass);
-        if (!isValid) {
-            throw new WebApplicationException("Password does not accord with the password policies.", 422);
-        }
+//        if (!isValid) {
+//            throw new WebApplicationException("Password does not accord with the password policies.", 422);
+//        }
         
         String profilePicture = UUID.randomUUID().toString();
 
