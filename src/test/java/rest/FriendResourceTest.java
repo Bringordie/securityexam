@@ -432,7 +432,7 @@ public class FriendResourceTest {
         FriendsDTO[] response = with()
                 .contentType("application/json")
                 .header("x-access-token", token)
-                .when().request("GET", "/friend/friends").then() //post REQUEST
+                .when().request("GET", "/friend/friends").then() //get REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.OK_200.getStatusCode())
                 .extract()
@@ -456,7 +456,7 @@ public class FriendResourceTest {
         with()
                 .contentType("application/json")
                 .header("x-access-token", token)
-                .when().request("GET", "/friend/friends").then() //post REQUEST
+                .when().request("GET", "/friend/friends").then() //get REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
     }
@@ -489,6 +489,51 @@ public class FriendResourceTest {
 
         assertNotNull(response);
         assertEquals("Friend has been removed", response);
+    }
+    
+    /**
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void successViewFriendRequests() throws NotFoundException, AuthenticationException {
+        EntityManager em = emf.createEntityManager();
+        facade.addFriendRequest(u2.getId(), u3.getId());
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.loginUser(u2.getUserName(), "test");
+        String token = getToken.securityToken;
+
+
+        FriendsDTO[] response = with()
+                .contentType("application/json")
+                .header("x-access-token", token)
+                .when().request("GET", "/friend/requests").then() //get REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode())
+                .extract()
+                .as(FriendsDTO[].class); //extract result JSON as object
+
+        assertNotNull(response);
+        assertEquals(u3.getFullName(), response[0].getFullName());
+        assertEquals(1, response.length);
+    }
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void failViewFriendRequests() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.loginUser(u2.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        with()
+                .contentType("application/json")
+                .header("x-access-token", token)
+                .when().request("GET", "/friend/friends").then() //get REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
     }
 
 

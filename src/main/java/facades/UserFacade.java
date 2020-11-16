@@ -12,6 +12,7 @@ import errorhandling.AlreadyExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import errorhandling.AuthenticationException;
+import errorhandling.NoFriendRequestsException;
 import errorhandling.NoFriendsException;
 import errorhandling.NotFoundException;
 import java.sql.Connection;
@@ -536,4 +537,27 @@ public class UserFacade {
         }
         return userDTOList;
     }    
+
+    public List<FriendsDTO> viewFriendRequests(int usernameID) throws NotFoundException, NoFriendRequestsException {
+        EntityManager em = emf.createEntityManager();
+        User user, userFriendRequest;
+        List<FriendsDTO> friendsReq = new ArrayList();
+        try {
+            em.getTransaction().begin();
+            user = em.find(User.class, usernameID);
+            if (user.getFriendRequests().isEmpty()) {
+                throw new NoFriendRequestsException("This user no friend requests.");
+            }
+            for (FriendRequest friendRequest : user.getFriendRequests()) {
+                userFriendRequest = em.find(User.class, friendRequest.getRequestUsernameID());
+                FriendsDTO friendRequestList = new FriendsDTO(userFriendRequest);
+                friendsReq.add(friendRequestList);
+            }
+        } catch (NullPointerException ex) {
+            throw new NotFoundException("Something unexpected went wrong, user name doesn't seem to exist");
+        } finally {
+            em.close();
+        }
+        return friendsReq;
+    }
 }

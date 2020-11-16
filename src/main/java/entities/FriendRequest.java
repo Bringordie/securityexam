@@ -41,7 +41,7 @@ public class FriendRequest implements Serializable {
         this.pictureUrl = pictureUrl;
     }
 
-    public int getRequestUsername() {
+    public int getRequestUsernameID() {
         return requestUsernameID;
     }
 

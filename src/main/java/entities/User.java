@@ -190,7 +190,7 @@ public class User implements Serializable {
     public Boolean deleteSpecificFriendRequest(int requestUserNameID) {
         Boolean response = false;
         for (FriendRequest friendRequest : friendRequests) {
-        if (friendRequest.getRequestUsername() == requestUserNameID) {
+        if (friendRequest.getRequestUsernameID() == requestUserNameID) {
             friendRequests.remove(friendRequest);
             response = true;
             break;
@@ -214,7 +214,7 @@ public class User implements Serializable {
     public Boolean validateSpecificFriendRequest(int requestUserNameID) {
         Boolean response = false;
         for (FriendRequest friendRequest : friendRequests) {
-        if (friendRequest.getRequestUsername() == requestUserNameID) {
+        if (friendRequest.getRequestUsernameID() == requestUserNameID) {
             response = true;
             break;
         }

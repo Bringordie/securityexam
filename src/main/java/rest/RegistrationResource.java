@@ -107,7 +107,7 @@ public class RegistrationResource {
             e.printStackTrace();
         }
     }
-
+    
     /**
      *
      * @author Frederik Braagaard

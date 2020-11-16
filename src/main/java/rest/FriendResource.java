@@ -10,6 +10,7 @@ import dtos.user.UserDTO;
 import entities.User;
 import errorhandling.AlreadyExistsException;
 import errorhandling.AuthenticationException;
+import errorhandling.NoFriendRequestsException;
 import errorhandling.NoFriendsException;
 import errorhandling.NotFoundException;
 import facades.UserFacade;
@@ -106,7 +107,36 @@ public class FriendResource {
         } catch (NotFoundException ex) {
             throw new WebApplicationException("Something unexpected went wrong", 500);
         } catch (NoFriendsException ex) {
-            throw new WebApplicationException("The requested friend could not be found", 404);
+            throw new WebApplicationException("The requester currently has no friends", 404);
+        }
+
+        return GSON.toJson(friends);
+    }
+    
+    /**
+     *
+     * @author Frederik Braagaard
+     */
+    @GET
+    @Path("/requests")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String getFriendsRequests(@HeaderParam("x-access-token") String accessToken) throws NotFoundException, ParseException, NoFriendRequestsException {
+        JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
+        UserPrincipal userPrin;
+        try {
+            userPrin = authenticate.getUserPrincipalFromTokenIfValid(accessToken);
+        } catch (JOSEException | AuthenticationException ex) {
+            throw new WebApplicationException(ex.getMessage(), 401);
+        }
+
+        int usernameID = userPrin.getNameID();
+        List<FriendsDTO> friends;
+        try {
+            friends = FACADE.viewFriendRequests(usernameID);
+        } catch (NotFoundException ex) {
+            throw new WebApplicationException("Something unexpected went wrong", 500);
+        } catch (NoFriendRequestsException ex) {
+            throw new WebApplicationException("You do not have any friend requests", 404);
         }
 
         return GSON.toJson(friends);

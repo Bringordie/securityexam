@@ -8,6 +8,7 @@ import entities.Role;
 import entities.User;
 import entities.UserPosts;
 import errorhandling.AuthenticationException;
+import errorhandling.NoFriendRequestsException;
 import errorhandling.NoFriendsException;
 import errorhandling.NotFoundException;
 import java.sql.SQLException;
@@ -531,6 +532,33 @@ public class UserFacadeTest {
         assertEquals(4, response.size());
     }
 
+/**
+     * Test of viewFriendRequests method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void viewFriendRequestsPass() throws NoFriendRequestsException, NotFoundException {
+        facade.addFriendRequest(u2.getId(), u3.getId());
+        List<FriendsDTO> response = facade.viewFriendRequests(u2.getId());
+        assertNotNull(response);
+        assertEquals(1, response.size());
+    }
 
+    /**
+     * Test of viewFriendRequests method, of class UserFacade fail.
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void viewFriendRequestsFail() throws NotFoundException, NoFriendRequestsException{
+        try {
+            List<FriendsDTO> response = facade.viewFriendRequests(u2.getId());
+            fail("Should fail");
+        } catch (NoFriendRequestsException ex) {
+            final String msg = "This user no friend requests.";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
 
 }
