@@ -375,7 +375,7 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject json = new JSONObject();
-        json.put("search_name", "admin");
+        json.put("search_name", "User3");
 
         UserDTO[] response = with()
                 .contentType("application/json")
@@ -388,7 +388,7 @@ public class FriendResourceTest {
                 .as(UserDTO[].class); //extract result JSON as object
 
         assertNotNull(response);
-        assertEquals(u4.getFullName(), response[0].getFullName());
+        assertEquals(u3.getFullName(), response[0].getFullName());
         assertEquals(1, response.length);
     }
 
@@ -405,6 +405,29 @@ public class FriendResourceTest {
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
         obj.put("search_name", 404);
+
+        with()
+                .contentType("application/json")
+                .header("x-access-token", token)
+                .body(obj)
+                .when().request("POST", "/friend/search").then() //post REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.NOT_FOUND_404.getStatusCode());
+    }
+    
+    /**
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void failFriendSearchNoAdmins() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.loginUser(u1.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        //Creating a JSON Object
+        JSONObject obj = new JSONObject();
+        obj.put("search_name", u4.getFullName());
 
         with()
                 .contentType("application/json")

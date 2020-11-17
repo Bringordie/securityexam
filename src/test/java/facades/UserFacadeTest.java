@@ -388,13 +388,13 @@ public class UserFacadeTest {
     public void findFriendPass() throws NotFoundException, AuthenticationException, SQLException, ClassNotFoundException {
         List<UserDTO> response = new ArrayList();
         try {
-            response = facade.friendSearch("admin");
+            response = facade.friendSearch("User3");
         } catch (NullPointerException | NotFoundException ex) {
             throw new NotFoundException("No results by this name was found");
         }
 
         assertNotNull(response);
-        assertEquals(u4.getFullName(), response.get(0).getFullName());
+        assertEquals(u3.getFullName(), response.get(0).getFullName());
     }
 
     /**
