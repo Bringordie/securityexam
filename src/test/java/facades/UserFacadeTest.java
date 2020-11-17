@@ -2,6 +2,7 @@ package facades;
 
 import dtos.user.FriendsDTO;
 import dtos.user.UserDTO;
+import dtos.user.UserPostsDTO;
 import entities.FriendRequest;
 import entities.Friends;
 import entities.Role;
@@ -489,7 +490,7 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
-    
+
     /**
      * Test of viewFriends method, of class UserFacade success.
      *
@@ -519,20 +520,20 @@ public class UserFacadeTest {
             assertEquals(msg, ex.getMessage());
         }
     }
-    
+
     /**
-     * Test of viewFriends method, of class UserFacade success.
+     * Test of adminGetUsers method, of class UserFacade success.
      *
      * @author Frederik Braagaard
      */
     @Test
-    public void adminGetUsers() throws NotFoundException, SQLException, ClassNotFoundException {
+    public void adminGetUsersSuccess() throws NotFoundException, SQLException, ClassNotFoundException {
         List<UserDTO> response = facade.adminGetUsers();
         assertNotNull(response);
         assertEquals(4, response.size());
     }
 
-/**
+    /**
      * Test of viewFriendRequests method, of class UserFacade success.
      *
      * @author Frederik Braagaard
@@ -551,7 +552,7 @@ public class UserFacadeTest {
      * @author Frederik Braagaard
      */
     @Test
-    public void viewFriendRequestsFail() throws NotFoundException, NoFriendRequestsException{
+    public void viewFriendRequestsFail() throws NotFoundException, NoFriendRequestsException {
         try {
             List<FriendsDTO> response = facade.viewFriendRequests(u2.getId());
             fail("Should fail");
@@ -559,6 +560,18 @@ public class UserFacadeTest {
             final String msg = "This user no friend requests.";
             assertEquals(msg, ex.getMessage());
         }
+    }
+    
+    /**
+     * Test of adminGetPosts method, of class UserFacade success.
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void adminGetPostsPass() throws NoFriendRequestsException, NotFoundException, SQLException, ClassNotFoundException {
+        List<UserPostsDTO> response = facade.adminGetPosts();
+        assertNotNull(response);
+        assertEquals(2, response.size());
     }
 
 }

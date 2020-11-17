@@ -536,7 +536,32 @@ public class UserFacade {
             throw new NullPointerException("No results by this name was found");
         }
         return userDTOList;
-    }    
+    }
+
+    public List<UserPostsDTO> adminGetPosts() throws SQLException, ClassNotFoundException {
+        List<UserPostsDTO> userPostDTOList = new ArrayList();
+        String query = "SELECT User_user_id, userPosts_ID, posts.ID, posts.post_date, posts.user_post, users.full_name FROM users_posts\n"
+                + "JOIN posts\n"
+                + "  ON posts.ID = userPosts_ID\n"
+                + "JOIN users\n"
+                + "  ON users.user_id = User_user_id";
+        try {
+            PreparedStatement ps = createConnection().prepareStatement(query);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                UserPostsDTO dto = new UserPostsDTO();
+                dto.setMessage(rs.getString("user_post"));
+                dto.setPostDate(rs.getDate("post_date"));
+                userPostDTOList.add(dto);
+            }
+            rs.close();
+            ps.close();
+        } catch (NullPointerException ex) {
+            throw new NullPointerException("No results by this name was found");
+        }
+        return userPostDTOList;
+    }
 
     public List<FriendsDTO> viewFriendRequests(int usernameID) throws NotFoundException, NoFriendRequestsException {
         EntityManager em = emf.createEntityManager();

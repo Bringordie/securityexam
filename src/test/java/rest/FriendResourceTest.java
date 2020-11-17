@@ -230,7 +230,7 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject json = new JSONObject();
-        json.put("request_usernameID", u2.getId());
+        json.put("request_userid", u2.getId());
         //ADD ONCE FINISHED
         //json.put("ipaddress", "127.0.0.1");
         //New comment. This should be on the login test not here
@@ -265,7 +265,7 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("request_usernameID", 404);
+        obj.put("request_userid", 404);
 
         with()
                 .contentType("application/json")
@@ -289,7 +289,7 @@ public class FriendResourceTest {
 
         //Creating a JSON Object
         JSONObject obj = new JSONObject();
-        obj.put("request_usernameID", u4.getId());
+        obj.put("request_userid", u4.getId());
 
         with()
                 .contentType("application/json")

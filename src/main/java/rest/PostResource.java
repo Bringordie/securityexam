@@ -6,17 +6,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.nimbusds.jose.JOSEException;
 import dtos.user.UserDTO;
-import entities.User;
 import entities.UserPosts;
-import errorhandling.AlreadyExistsException;
 import errorhandling.AuthenticationException;
 import errorhandling.NoFriendsException;
 import errorhandling.NotFoundException;
 import facades.UserFacade;
 import java.text.ParseException;
 import java.util.List;
-import java.util.UUID;
-import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -25,9 +21,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
@@ -58,7 +52,6 @@ public class PostResource {
      */
     @GET
     @Path("/own")
-    //@Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String getPosts(@HeaderParam("x-access-token") String accessToken) throws ParseException, JOSEException, AuthenticationException, NotFoundException {
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
@@ -85,7 +78,6 @@ public class PostResource {
      */
     @GET
     @Path("/friends")
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String getFriendsPosts(@HeaderParam("x-access-token") String accessToken) throws ParseException, JOSEException, AuthenticationException, NotFoundException, NoFriendsException {
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();

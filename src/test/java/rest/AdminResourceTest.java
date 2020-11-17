@@ -174,20 +174,55 @@ public class AdminResourceTest {
      *
      * @author Frederik Braagaard
      */
-    //Should throw a 401 but throws a 403
-    @Ignore
+    @Test
     public void failAdminGetUsersTest() {
         LoginEndpointTest getToken = new LoginEndpointTest();
         getToken.loginUser(u2.getUserName(), "test");
         String token = getToken.securityToken;
-        
+
         given() //include object in body
                 .contentType("application/json")
-                .header("x-access-token", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwicm9sZSI6InVzZXIiLCJleHAiOjE2MDM2MjU1MzAsImlhdCI6MTYwMzYyMzczMCwiaXNzdWVyIjoic2VtZXN0ZXJzdGFydGNvZGUtZGF0MyIsInVzZXJuYW1lIjoidXNlciJ9.mLrZ_pPX8GPIpBGnGEnG2eSUCh6Pcrz7Eq0uyEDOr2")
+                .header("x-access-token", token)
                 .when().get("/admin/users").then() //get REQUEST
                 .assertThat()
                 .statusCode(HttpStatus.UNAUTHORIZED_401.getStatusCode());
     }
 
+    /**
+     *
+     * @author Frederik Braagaard
+     */
+    @Test
+    public void successfullAdminGetPostsTest() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.loginAdmin(u4.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        given() //include object in body
+                .contentType("application/json")
+                .header("x-access-token", token)
+                .when().get("/admin/posts").then() //get REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.OK_200.getStatusCode());
+    }
+
+    /**
+     *
+     * @author Frederik Braagaard
+     */
+    //Should throw a 401 but throws a 403
+    @Test
+    public void failAdminGetPostsTest() {
+        LoginEndpointTest getToken = new LoginEndpointTest();
+        getToken.loginUser(u2.getUserName(), "test");
+        String token = getToken.securityToken;
+
+        given() //include object in body
+                .contentType("application/json")
+                .header("x-access-token", token)
+                .when().get("/admin/posts").then() //get REQUEST
+                .assertThat()
+                .statusCode(HttpStatus.UNAUTHORIZED_401.getStatusCode());
+    }
 
 }

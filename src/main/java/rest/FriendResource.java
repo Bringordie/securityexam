@@ -8,7 +8,6 @@ import com.nimbusds.jose.JOSEException;
 import dtos.user.FriendsDTO;
 import dtos.user.UserDTO;
 import entities.User;
-import errorhandling.AlreadyExistsException;
 import errorhandling.AuthenticationException;
 import errorhandling.NoFriendRequestsException;
 import errorhandling.NoFriendsException;
@@ -17,8 +16,6 @@ import facades.UserFacade;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.List;
-import java.util.UUID;
-import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -27,9 +24,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
@@ -161,7 +156,7 @@ public class FriendResource {
         }
 
         int usernameID = userPrin.getNameID();
-        int request_usernameID = json.get("request_usernameID").getAsInt();
+        int request_usernameID = json.get("request_userid").getAsInt();
         User user;
         try {
             user = FACADE.acceptFriendRequest(usernameID, request_usernameID);
