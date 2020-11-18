@@ -97,3 +97,4 @@ modules.xml
 /target/
 /src/main/java/cors/tester.java
 src/main/java/utils/SetupTestUsers.java
+/src/main/resources/mongo.properties

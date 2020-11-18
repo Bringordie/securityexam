@@ -29,11 +29,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import errorhandling.AuthenticationException;
 import errorhandling.GenericExceptionMapper;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import javax.persistence.EntityManagerFactory;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.WebApplicationException;
+import mongodb.MongoConnection;
 import utils.EMF_Creator;
 
 /**
@@ -47,6 +50,7 @@ public class LoginEndpoint {
     private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.DEV, EMF_Creator.Strategy.CREATE);
     public static final UserFacade USER_FACADE = UserFacade.getUserFacade(EMF);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final MongoConnection MONGODB = new MongoConnection();
 
     /**
      *
@@ -132,7 +136,7 @@ public class LoginEndpoint {
     @Path("/admin")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response loginAdmin(String jsonString) throws AuthenticationException, SQLException, ClassNotFoundException {
+    public Response loginAdmin(String jsonString, @HeaderParam("ip_address") String ip_address) throws AuthenticationException, SQLException, ClassNotFoundException, IOException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         String username = json.get("username").getAsString();
         String password = json.get("password").getAsString();
@@ -143,6 +147,13 @@ public class LoginEndpoint {
 //            throw new WebApplicationException("Forbidden. Request made to login outside workplace.", 403);
 //        }
         int usernameID;
+        
+        String userIP;
+        if (ip_address == null || ip_address == "") {
+            userIP = "UNKNOWN";
+        } else {
+            userIP = ip_address;
+        }
 
         try {
             User user = USER_FACADE.getVeryfiedAdmin(username, password);
@@ -151,14 +162,16 @@ public class LoginEndpoint {
             String token = createToken(username, usernameID, user.getRole());
             JsonObject responseJson = new JsonObject();
             responseJson.addProperty("token", token);
+            MONGODB.loggetInsertDocument(MONGODB.loggerDocument("Successfull", userIP, "loginAdmin()", username));
             return Response.ok(new Gson().toJson(responseJson)).build();
 
-        } catch (JOSEException | AuthenticationException ex) {
+        } catch (JOSEException| AuthenticationException ex) {
             if (ex instanceof AuthenticationException) {
+                MONGODB.loggetInsertDocument(MONGODB.loggerDocument("Fail", userIP, "loginAdmin()", username));
                 throw new WebApplicationException("Forbidden request", 401);
             }
-            Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
-        } 
+            //Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
+        }
         throw new AuthenticationException("Invalid username or password! Please try again");
     }
 

@@ -16,13 +16,19 @@
         <!-- TODO: Change the URL to your own tomcat server. Used to deploy your WAR-file 
         -->
         <remote.server>https://cphfb.codes/manager/text</remote.server>
+        
+        <!-- MongoDB -->
+        <maven-compiler-plugin.source>8</maven-compiler-plugin.source>
+        <maven-compiler-plugin.target>8</maven-compiler-plugin.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mongodb-driver-sync.version>3.11.0</mongodb-driver-sync.version>
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
     </properties>
     
     
     
     <dependencies>
         
-        <!---->
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.core</artifactId>
@@ -38,6 +44,13 @@
             <artifactId>org.eclipse.persistence.antlr</artifactId>
             <version>2.5.2</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>${mongodb-driver-sync.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa</artifactId>
@@ -166,6 +179,16 @@
         <finalName>sem4</finalName>
 
         <plugins>
+            <!-- Mongo DB -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${maven-compiler-plugin.source}</source>
+                    <target>${maven-compiler-plugin.target}</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.tomcat.maven</groupId>
                 <artifactId>tomcat7-maven-plugin</artifactId>
