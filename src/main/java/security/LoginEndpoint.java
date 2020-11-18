@@ -59,7 +59,7 @@ public class LoginEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response loginUser(String jsonString) throws AuthenticationException, SQLException, ClassNotFoundException {
+    public Response loginUser(String jsonString) throws AuthenticationException, SQLException, ClassNotFoundException, IOException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         String username = json.get("username").getAsString();
         String password = json.get("password").getAsString();
@@ -73,7 +73,7 @@ public class LoginEndpoint {
             responseJson.addProperty("token", token);
             return Response.ok(new Gson().toJson(responseJson)).build();
 
-        } catch (JOSEException | AuthenticationException ex) {
+        } catch (Exception ex) {
             throw new WebApplicationException("Invalid username or secret! Please try again", 401);
             //Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -107,7 +107,7 @@ public class LoginEndpoint {
      *
      * @author Frederik Braagaard
      */
-    private String createToken(String userName, int userNameID, Role role) throws JOSEException {
+    private String createToken(String userName, int userNameID, Role role) throws JOSEException, IOException {
 
         String issuer = "semesterstartcode-dat3";
 

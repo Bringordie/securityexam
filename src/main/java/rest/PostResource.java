@@ -11,6 +11,7 @@ import errorhandling.AuthenticationException;
 import errorhandling.NoFriendsException;
 import errorhandling.NotFoundException;
 import facades.UserFacade;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 import javax.persistence.EntityManagerFactory;
@@ -53,7 +54,7 @@ public class PostResource {
     @GET
     @Path("/own")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getPosts(@HeaderParam("x-access-token") String accessToken) throws ParseException, JOSEException, AuthenticationException, NotFoundException {
+    public String getPosts(@HeaderParam("x-access-token") String accessToken) throws ParseException, JOSEException, AuthenticationException, NotFoundException, IOException {
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
         UserPrincipal userPrin;
         try {
@@ -79,7 +80,7 @@ public class PostResource {
     @GET
     @Path("/friends")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getFriendsPosts(@HeaderParam("x-access-token") String accessToken) throws ParseException, JOSEException, AuthenticationException, NotFoundException, NoFriendsException {
+    public String getFriendsPosts(@HeaderParam("x-access-token") String accessToken) throws ParseException, JOSEException, AuthenticationException, NotFoundException, NoFriendsException, IOException {
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
         UserPrincipal userPrin;
         try {
@@ -107,7 +108,7 @@ public class PostResource {
     @Path("/create")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public String createPost(String jsonString, @HeaderParam("x-access-token") String accessToken) throws ParseException, JOSEException, AuthenticationException {
+    public String createPost(String jsonString, @HeaderParam("x-access-token") String accessToken) throws ParseException, JOSEException, AuthenticationException, IOException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         JWTAuthenticationFilter authenticate = new JWTAuthenticationFilter();
         UserPrincipal userPrin;

@@ -2,10 +2,14 @@ package rest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import entities.User;
 import errorhandling.AlreadyExistsException;
 import facades.UserFacade;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +34,8 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import utils.EMF_Creator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 /**
  *
@@ -41,8 +47,8 @@ public class RegistrationResource {
     private static EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.DEV, EMF_Creator.Strategy.CREATE);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final UserFacade FACADE = UserFacade.getUserFacade(EMF);
-    private static final String PASSWORD_PATTERN =
-            "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,}$";
+    private static final String PASSWORD_PATTERN
+            = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$";
     private static final Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
 
     @Context
@@ -61,10 +67,10 @@ public class RegistrationResource {
     @Produces(MediaType.APPLICATION_JSON)
     public String createUser(@FormDataParam("file") InputStream uploadedInputStream, @FormDataParam("file") FormDataBodyPart body, @FormDataParam("fullname") String fullName, @FormDataParam("username") String userName, @FormDataParam("password") String userPass, @FormDataParam("secret") String secretAnswer) throws SQLException, ClassNotFoundException, IOException {
         Boolean isValid = isValid(userPass);
-//        if (!isValid) {
-//            throw new WebApplicationException("Password does not accord with the password policies.", 422);
-//        }
-        
+        if (!isValid) {
+            throw new WebApplicationException("Password does not accord with the password policies.", 422);
+        }
+
         String profilePicture = UUID.randomUUID().toString();
 
         //Checking mimetype
@@ -73,38 +79,56 @@ public class RegistrationResource {
             throw new WebApplicationException("Only .png pictures are allowed to be uploaded.", 415);
         }
 
-        int size = toByteArray(uploadedInputStream).length;
+//        InputStream sizeChecker = uploadedInputStream;
+        byte[] size = toByteArray(uploadedInputStream);
         int maxSize = 1048576 * 5; //5 MB
-        if (size > maxSize) {
+        if (size.length > maxSize) {
             throw new WebApplicationException("Uploaded file is too big.", 413);
         }
 
         try {
             User user = FACADE.createNormalUser(fullName, userName, userPass, secretAnswer, profilePicture);
             String uploadedFileLocation = "d://uploaded/" + profilePicture + ".png";
-            writeToFile(uploadedInputStream, uploadedFileLocation);
+            writeToFile(size, uploadedFileLocation);
             return GSON.toJson(user);
         } catch (AlreadyExistsException ex) {
             throw new WebApplicationException(ex.getMessage(), 400);
         }
     }
 
-    private void writeToFile(InputStream uploadedInputStream, String uploadedFileLocation) {
-        try {
-            OutputStream out = new FileOutputStream(new File(uploadedFileLocation));
-            int read = 0;
+//    /**
+//     *
+//     * @author Frederik Braagaard
+//     */
+//    @POST
+//    @Path("/test")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public String test(String jsonString) throws SQLException, ClassNotFoundException, IOException {
+//        JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+//        String username = json.get("username").getAsString();
+//        String password = json.get("password").getAsString();
+//        String secret = json.get("secret").getAsString();
+//
+//        try {
+//            User user = FACADE.createNormalUser("fullName", username, password, secret, "profilePicture");
+//            return GSON.toJson(user);
+//        } catch (AlreadyExistsException ex) {
+//            throw new WebApplicationException(ex.getMessage(), 400);
+//        }
+//    }
+
+    private void writeToFile(byte[] uploadedInputStream, String uploadedFileLocation) throws FileNotFoundException, IOException {
+        //int size = toByteArray(uploadedInputStream).length;
+        try (FileOutputStream outputStream = new FileOutputStream(uploadedFileLocation)) {
+
+            int read;
             byte[] bytes = new byte[1024];
-            out = new FileOutputStream(new File(uploadedFileLocation));
-            while ((read = uploadedInputStream.read(bytes)) != -1) {
-                out.write(bytes, 0, read);
-            }
-            out.flush();
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            FileUtils.writeByteArrayToFile(new File(uploadedFileLocation), uploadedInputStream);
+
         }
     }
-    
+
 //    /**
 //     *
 //     * @author Frederik Braagaard
@@ -122,11 +146,9 @@ public class RegistrationResource {
 //            throw new WebApplicationException(ex.getMessage(), 400);
 //        }
 //    }
-    
     public static boolean isValid(final String password) {
         Matcher matcher = pattern.matcher(password);
         return matcher.matches();
     }
-
 
 }
