@@ -15,6 +15,7 @@ import java.io.InputStream;
 import org.bson.Document;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -25,8 +26,9 @@ import java.util.Properties;
 public class MongoConnection {
 
     private static MongoClient mongoClient;
-    private static MongoDatabase dbLogger;
+    private static MongoDatabase mongoDB;
     private static MongoCollection<Document> logCollection;
+    public static Boolean loggingStatus = true;
 
 //    public static void main(String[] args) throws IOException {
 //        MongoConnection setup = new MongoConnection();
@@ -54,11 +56,11 @@ public class MongoConnection {
             String connectionString = prop.getProperty("mongouri");
             mongoClient = MongoClients.create(connectionString);
             
-            String databaseString = prop.getProperty("mongoLoggerDB");
-            dbLogger = mongoClient.getDatabase(databaseString);
+            String databaseString = prop.getProperty("mongoDB");
+            mongoDB = mongoClient.getDatabase(databaseString);
             
             String collectionString = prop.getProperty("mongoLoggerCollection");
-            logCollection = dbLogger.getCollection(collectionString);
+            logCollection = mongoDB.getCollection(collectionString);
         } catch (Exception e) {
             System.out.println("Exception: " + e);
         } finally {
@@ -67,14 +69,17 @@ public class MongoConnection {
     }
 
     public void loggetInsertDocument(Document loggerAddToCollection) throws IOException {
+        if(loggingStatus){
         MongoConnection setup = new MongoConnection();
         setup.loggetSetup();
         logCollection.insertOne(loggerAddToCollection);
+        }
     }
 
     public Document loggerDocument(String status, String ip_address, String method, String user) {
-        Document logCollection = new Document("status", status).append("IP", ip_address).append("method", method).append("userID", user);
+        Date date = new Date();
+        Document logCollection = new Document("status", status).append("IP", ip_address).append("method", method).append("userID", user).append("date", date);
         return logCollection;
     }
-
+        
 }

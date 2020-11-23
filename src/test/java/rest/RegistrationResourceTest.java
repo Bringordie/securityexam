@@ -14,6 +14,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.core.UriBuilder;
 import jdk.nashorn.internal.ir.annotations.Ignore;
+import mongodb.MongoConnection;
+import mongodb.MongoFailedLogin;
 import net.minidev.json.JSONObject;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.util.HttpStatus;
@@ -41,6 +43,8 @@ public class RegistrationResourceTest {
     private static User u1, u2;
     private static Role r1, r2;
     private static UserFacade facade;
+    private static MongoConnection mongo;
+    private static MongoFailedLogin mongoLogin;
 
     static HttpServer startServer() {
         ResourceConfig rc = ResourceConfig.forApplication(new ApplicationConfig());
@@ -54,6 +58,8 @@ public class RegistrationResourceTest {
         emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.TEST, EMF_Creator.Strategy.DROP_AND_CREATE);
         facade = UserFacade.getUserFacade(emf);
         facade.serverStatus = false;
+        mongo.loggingStatus = false;
+        mongoLogin.loggingStatus = false;
 
         httpServer = startServer();
         //Setup RestAssured

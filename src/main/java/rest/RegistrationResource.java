@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
+import java.util.Properties;
 import java.util.UUID;
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
@@ -67,6 +68,7 @@ public class RegistrationResource {
     @Produces(MediaType.APPLICATION_JSON)
     public String createUser(@FormDataParam("file") InputStream uploadedInputStream, @FormDataParam("file") FormDataBodyPart body, @FormDataParam("fullname") String fullName, @FormDataParam("username") String userName, @FormDataParam("password") String userPass, @FormDataParam("secret") String secretAnswer) throws SQLException, ClassNotFoundException, IOException {
         Boolean isValid = isValid(userPass);
+        InputStream inputStream = null;
         if (!isValid) {
             throw new WebApplicationException("Password does not accord with the password policies.", 422);
         }
@@ -79,7 +81,6 @@ public class RegistrationResource {
             throw new WebApplicationException("Only .png pictures are allowed to be uploaded.", 415);
         }
 
-//        InputStream sizeChecker = uploadedInputStream;
         byte[] size = toByteArray(uploadedInputStream);
         int maxSize = 1048576 * 5; //5 MB
         if (size.length > maxSize) {
@@ -87,8 +88,23 @@ public class RegistrationResource {
         }
 
         try {
+            //Created user
             User user = FACADE.createNormalUser(fullName, userName, userPass, secretAnswer, profilePicture);
-            String uploadedFileLocation = "d://uploaded/" + profilePicture + ".png";
+            
+            //Reads property file with the path
+            Properties prop = new Properties();
+            String propFileName = "picture.properties";
+            inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
+            
+            if (inputStream != null) {
+                prop.load(inputStream);
+            } else {
+                throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
+            }
+            String folderPath = prop.getProperty("picturepathdemo");
+            
+            //Uploads the picture
+            String uploadedFileLocation = folderPath + profilePicture + ".png";
             writeToFile(size, uploadedFileLocation);
             return GSON.toJson(user);
         } catch (AlreadyExistsException ex) {

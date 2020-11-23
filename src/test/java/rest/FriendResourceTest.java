@@ -22,6 +22,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.core.UriBuilder;
 import jdk.nashorn.internal.ir.annotations.Ignore;
+import mongodb.MongoConnection;
+import mongodb.MongoFailedLogin;
 import net.minidev.json.JSONObject;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.util.HttpStatus;
@@ -53,6 +55,8 @@ public class FriendResourceTest {
     private static EntityManagerFactory emf;
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static UserFacade facade;
+    private static MongoConnection mongo;
+    private static MongoFailedLogin mongoLogin;
 
     private User u1, u2, u3, u4;
     private Role r1, r2;
@@ -76,6 +80,8 @@ public class FriendResourceTest {
         emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.TEST, EMF_Creator.Strategy.CREATE);
         facade = UserFacade.getUserFacade(emf);
         facade.serverStatus = false;
+        mongo.loggingStatus = false;
+        mongoLogin.loggingStatus = false;
         httpServer = startServer();
         //Setup RestAssured
         RestAssured.baseURI = SERVER_URL;

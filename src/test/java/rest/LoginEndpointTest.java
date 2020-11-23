@@ -16,6 +16,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.ws.rs.core.UriBuilder;
 import jdk.nashorn.internal.ir.annotations.Ignore;
+import mongodb.MongoConnection;
+import mongodb.MongoFailedLogin;
 import net.minidev.json.JSONObject;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.util.HttpStatus;
@@ -40,6 +42,8 @@ public class LoginEndpointTest {
     static final URI BASE_URI = UriBuilder.fromUri(SERVER_URL).port(SERVER_PORT).build();
     private static HttpServer httpServer;
     private static EntityManagerFactory emf;
+    private static MongoConnection mongo;
+    private static MongoFailedLogin mongoLogin;
 
     private static UserFacade facade;
 
@@ -65,6 +69,8 @@ public class LoginEndpointTest {
         emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.TEST, EMF_Creator.Strategy.CREATE);
         facade = UserFacade.getUserFacade(emf);
         facade.serverStatus = false;
+        mongo.loggingStatus = false;
+        mongoLogin.loggingStatus = false;
 
         httpServer = startServer();
         //Setup RestAssured

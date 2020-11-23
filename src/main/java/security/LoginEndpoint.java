@@ -7,19 +7,13 @@ import com.google.gson.JsonParser;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.MACSigner;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import entities.Role;
 import facades.UserFacade;
 import java.util.Date;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import entities.User;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -28,7 +22,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import errorhandling.AuthenticationException;
-import errorhandling.GenericExceptionMapper;
+import errorhandling.LoginMaxTriesException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -37,6 +31,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.WebApplicationException;
 import mongodb.MongoConnection;
+import mongodb.MongoFailedLogin;
 import utils.EMF_Creator;
 
 /**
@@ -51,6 +46,7 @@ public class LoginEndpoint {
     public static final UserFacade USER_FACADE = UserFacade.getUserFacade(EMF);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final MongoConnection MONGODB = new MongoConnection();
+    private static final MongoFailedLogin MONGODBLOGIN = new MongoFailedLogin();
 
     /**
      *
@@ -59,11 +55,19 @@ public class LoginEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response loginUser(String jsonString) throws AuthenticationException, SQLException, ClassNotFoundException, IOException {
+    public Response loginUser(String jsonString, @HeaderParam("ip_address") String ip_address) throws AuthenticationException, SQLException, ClassNotFoundException, IOException, LoginMaxTriesException {
         JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
         String username = json.get("username").getAsString();
         String password = json.get("password").getAsString();
         int usernameID;
+        
+        String userIP;
+        //This logic should have been changed.
+        if (ip_address == null || ip_address == "") {
+            userIP = "UNKNOWN";
+        } else {
+            userIP = ip_address;
+        }
 
         try {
             User user = USER_FACADE.getVeryfiedUser(username, password);
@@ -74,6 +78,11 @@ public class LoginEndpoint {
             return Response.ok(new Gson().toJson(responseJson)).build();
 
         } catch (Exception ex) {
+            try {
+            MONGODBLOGIN.loginLogger(userIP, username);
+            } catch (LoginMaxTriesException error) {
+                throw new WebApplicationException("5 errors in 10 minutes. Please wait 10 minutes or recover your password.", 429);
+            }
             throw new WebApplicationException("Invalid username or secret! Please try again", 401);
             //Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -99,3 +99,4 @@ modules.xml
 src/main/java/utils/SetupTestUsers.java
 /src/main/resources/mongo.properties
 /src/main/resources/salt.properties
+/src/main/resources/picture.properties
